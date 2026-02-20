@@ -1,4 +1,4 @@
-"""
+﻿"""
 ================================================================================
 MODULE 4: MODEL EVALUATION
 ================================================================================
@@ -35,6 +35,7 @@ import seaborn as sns
 from pathlib import Path
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
+import time
 from tqdm import tqdm
 
 # HuggingFace libraries
@@ -68,10 +69,13 @@ class EvalConfig:
     max_new_tokens: int = 50  # Max tokens to generate
     temperature: float = 0.1  # Low temperature for deterministic outputs
     top_p: float = 0.9
-    do_sample: bool = True  # Use sampling (with low temp)
+    do_sample: bool = False  # Greedy decoding for reproducibility
     
     # Batch processing
-    batch_size: int = 8  # Process multiple samples at once
+    batch_size: int = 1  # Keep at 1 for CPU inference (no GPU parallelism benefit)
+    
+    # Subsampling (set to 0 to use full test set)
+    max_samples: int = 200  # Subsample test set for CPU speed (0 = use all)
     
     # Output
     output_dir: str = "./Results"
@@ -101,6 +105,8 @@ def load_model(config: EvalConfig):
     """
     Load the fine-tuned model with LoRA adapters.
     
+    Supports both GPU (4-bit quantized) and CPU (float16) loading.
+    
     Args:
         config (EvalConfig): Evaluation configuration
     
@@ -119,25 +125,63 @@ def load_model(config: EvalConfig):
     )
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
-    print(f"✓ Tokenizer loaded")
+    print(f"[OK] Tokenizer loaded")
     
-    # Load base model
-    print("\n[2/3] Loading base phi-2 model...")
-    base_model = AutoModelForCausalLM.from_pretrained(
+    # Pre-load config and inject pad_token_id BEFORE model init
+    # (PhiModel.__init__ accesses config.pad_token_id during construction)
+    from transformers import AutoConfig
+    model_config = AutoConfig.from_pretrained(
         config.base_model_id,
-        device_map="auto",
-        trust_remote_code=True,
-        torch_dtype=torch.float16
+        trust_remote_code=True
     )
-    print(f"✓ Base model loaded")
+    # Inject pad_token_id into config dict so PhiModel.__init__ can find it
+    model_config.update({"pad_token_id": tokenizer.pad_token_id})
+    
+    use_gpu = config.device == "cuda" and torch.cuda.is_available()
+    
+    if use_gpu:
+        # GPU path: 4-bit quantization (same as training)
+        print("\n[2/3] Loading base phi-2 model with 4-bit quantization (GPU)...")
+        from transformers import BitsAndBytesConfig
+        
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+        )
+        
+        base_model = AutoModelForCausalLM.from_pretrained(
+            config.base_model_id,
+            config=model_config,
+            quantization_config=bnb_config,
+            device_map="auto",
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
+        )
+        print(f"[OK] Base model loaded (4-bit quantized on GPU)")
+    else:
+        # CPU path: load in float16 (no bitsandbytes needed)
+        print("\n[2/3] Loading base phi-2 model in float16 (CPU)...")
+        print("    (This may take a few minutes and ~6GB RAM)")
+        
+        base_model = AutoModelForCausalLM.from_pretrained(
+            config.base_model_id,
+            config=model_config,
+            dtype=torch.float16,
+            device_map="cpu",
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
+        )
+        print(f"[OK] Base model loaded (float16 on CPU)")
     
     # Load LoRA adapters
     print("\n[3/3] Loading LoRA adapters...")
     model = PeftModel.from_pretrained(base_model, config.adapter_path)
     model.eval()  # Set to evaluation mode
-    print(f"✓ LoRA adapters loaded from: {config.adapter_path}")
+    print(f"[OK] LoRA adapters loaded from: {config.adapter_path}")
     
-    print(f"\n✓ Model ready for inference on: {config.device}")
+    print(f"\n[OK] Model ready for inference on: {config.device}")
     
     return model, tokenizer
 
@@ -216,16 +260,31 @@ def run_inference(model, tokenizer, test_data: List[Dict], config: EvalConfig) -
     Returns:
         List[Dict]: Predictions with metadata
     """
+    import time
+    
     print(f"\n{'='*70}")
     print("RUNNING INFERENCE ON TEST SET")
     print(f"{'='*70}")
     print(f"\nTest samples: {len(test_data):,}")
     print(f"Batch size: {config.batch_size}")
+    print(f"Device: {config.device}")
     
     predictions = []
+    start_time = time.time()
     
-    # Process in batches for efficiency
-    for i in tqdm(range(0, len(test_data), config.batch_size), desc="Inference"):
+    # Build generation kwargs (avoid temperature/top_p when do_sample=False)
+    gen_kwargs = dict(
+        max_new_tokens=config.max_new_tokens,
+        pad_token_id=tokenizer.eos_token_id,
+        do_sample=config.do_sample,
+    )
+    if config.do_sample:
+        gen_kwargs['temperature'] = config.temperature
+        gen_kwargs['top_p'] = config.top_p
+    
+    # Process in batches
+    total_batches = (len(test_data) + config.batch_size - 1) // config.batch_size
+    for i in tqdm(range(0, len(test_data), config.batch_size), desc="Inference", total=total_batches):
         batch = test_data[i:i + config.batch_size]
         
         # Format prompts
@@ -238,17 +297,15 @@ def run_inference(model, tokenizer, test_data: List[Dict], config: EvalConfig) -
             padding=True,
             truncation=True,
             max_length=512
-        ).to(config.device)
+        )
+        # Move to device (handles both CPU and GPU)
+        inputs = {k: v.to(config.device) for k, v in inputs.items()}
         
         # Generate
         with torch.no_grad():
             outputs = model.generate(
                 **inputs,
-                max_new_tokens=config.max_new_tokens,
-                temperature=config.temperature,
-                top_p=config.top_p,
-                do_sample=config.do_sample,
-                pad_token_id=tokenizer.eos_token_id
+                **gen_kwargs,
             )
         
         # Decode
@@ -259,16 +316,25 @@ def run_inference(model, tokenizer, test_data: List[Dict], config: EvalConfig) -
             prediction = extract_prediction(generated, prompt)
             
             predictions.append({
-                'true_label': item['attack_category'],
+                'true_label': item.get('attack_category', 'unknown'),
                 'predicted_label': prediction,
-                'original_attack': item['original_label'],
-                'protocol': item['protocol'],
-                'service': item['service'],
+                'original_attack': item.get('original_label', 'unknown'),
+                'protocol': item.get('protocol', 'unknown'),
+                'service': item.get('service', 'unknown'),
                 'generated_text': generated[len(prompt):].strip(),
-                'full_input': item['input']
+                'full_input': item.get('input', '')
             })
+        
+        # Print time estimate after first batch
+        if i == 0 and len(test_data) > config.batch_size:
+            elapsed = time.time() - start_time
+            per_sample = elapsed / len(batch)
+            est_total = per_sample * len(test_data)
+            print(f"\n  Time per sample: ~{per_sample:.1f}s | "
+                  f"Estimated total: ~{est_total/60:.1f} min")
     
-    print(f"\n✓ Inference complete: {len(predictions):,} predictions")
+    elapsed_total = time.time() - start_time
+    print(f"\n[OK] Inference complete: {len(predictions):,} predictions in {elapsed_total/60:.1f} min")
     
     return predictions
 
@@ -359,9 +425,9 @@ def print_metrics(metrics: Dict):
     print(f"{'='*70}")
     
     # Overall metrics
-    print(f"\n{'─'*70}")
+    print(f"\n{'-'*70}")
     print("Overall Performance:")
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
     print(f"  Accuracy:           {metrics['accuracy']:.4f} ({metrics['accuracy']*100:.2f}%)")
     print(f"\n  Macro Averages:")
     print(f"    Precision:        {metrics['macro_precision']:.4f}")
@@ -373,11 +439,11 @@ def print_metrics(metrics: Dict):
     print(f"    F1-Score:         {metrics['weighted_f1']:.4f}")
     
     # Per-class metrics
-    print(f"\n{'─'*70}")
+    print(f"\n{'-'*70}")
     print("Per-Class Performance:")
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
     print(f"{'Category':<15} {'Precision':<12} {'Recall':<12} {'F1-Score':<12} {'Support':<10}")
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
     
     for label in CATEGORY_LABELS:
         metrics_class = metrics['per_class'][label]
@@ -387,7 +453,7 @@ def print_metrics(metrics: Dict):
               f"{metrics_class['f1']:>10.4f}  "
               f"{metrics_class['support']:>8,}")
     
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
 
 
 def plot_confusion_matrix(metrics: Dict, output_dir: str):
@@ -429,7 +495,7 @@ def plot_confusion_matrix(metrics: Dict, output_dir: str):
     # Save
     output_path = Path(output_dir) / "confusion_matrix.png"
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"✓ Confusion matrix saved to: {output_path}")
+    print(f"[OK] Confusion matrix saved to: {output_path}")
     
     plt.close()
 
@@ -486,7 +552,7 @@ def plot_per_class_metrics(metrics: Dict, output_dir: str):
     
     output_path = Path(output_dir) / "per_class_metrics.png"
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"✓ Per-class metrics plot saved to: {output_path}")
+    print(f"[OK] Per-class metrics plot saved to: {output_path}")
     
     plt.close()
 
@@ -519,9 +585,9 @@ def analyze_explainability(predictions: List[Dict], n_samples: int = 5):
         if not category_preds:
             continue
         
-        print(f"\n{'─'*70}")
+        print(f"\n{'-'*70}")
         print(f"Category: {CATEGORY_DESCRIPTIONS[category].upper()}")
-        print(f"{'─'*70}")
+        print(f"{'-'*70}")
         
         # Show a few examples
         for i, pred in enumerate(category_preds[:min(n_samples, len(category_preds))]):
@@ -557,7 +623,7 @@ def analyze_failure_cases(predictions: List[Dict], n_samples: int = 3):
           f"({len(failures)/len(predictions)*100:.2f}%)")
     
     if not failures:
-        print("\n✓ Perfect classification! No failures to analyze.")
+        print("\n[OK] Perfect classification! No failures to analyze.")
         return
     
     # Analyze failure patterns
@@ -571,12 +637,12 @@ def analyze_failure_cases(predictions: List[Dict], n_samples: int = 3):
     
     for (true, pred), count in sorted_patterns[:5]:
         percentage = (count / len(failures)) * 100
-        print(f"  {true} → {pred}: {count} cases ({percentage:.1f}% of failures)")
+        print(f"  {true} -> {pred}: {count} cases ({percentage:.1f}% of failures)")
     
     # Show example failures
-    print(f"\n{'─'*70}")
+    print(f"\n{'-'*70}")
     print(f"Example Failure Cases:")
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
     
     for i, failure in enumerate(failures[:n_samples]):
         print(f"\n[Failure {i+1}]")
@@ -616,13 +682,13 @@ def save_results(metrics: Dict, predictions: List[Dict], output_dir: str):
     metrics_file = output_path / "metrics.json"
     with open(metrics_file, 'w') as f:
         json.dump(metrics, f, indent=2)
-    print(f"✓ Metrics saved to: {metrics_file}")
+    print(f"[OK] Metrics saved to: {metrics_file}")
     
     # Save predictions
     predictions_file = output_path / "predictions.json"
     with open(predictions_file, 'w') as f:
         json.dump(predictions, f, indent=2)
-    print(f"✓ Predictions saved to: {predictions_file}")
+    print(f"[OK] Predictions saved to: {predictions_file}")
     
     # Save readable report
     report_file = output_path / "evaluation_report.txt"
@@ -646,7 +712,7 @@ def save_results(metrics: Dict, predictions: List[Dict], output_dir: str):
             f.write(f"{label:<15} {m['precision']:>10.4f}  {m['recall']:>10.4f}  "
                    f"{m['f1']:>10.4f}  {m['support']:>8,}\n")
     
-    print(f"✓ Report saved to: {report_file}")
+    print(f"[OK] Report saved to: {report_file}")
 
 
 # ============================================================================
@@ -662,8 +728,36 @@ def main():
     print(" "*10 + "Network Anomaly Detection (6G-AIOps)")
     print("="*70)
     
-    # Configuration
+    # Setup paths
+    PROJECT_ROOT = Path(__file__).parent.parent
+    
+    # Configuration with absolute paths
     config = EvalConfig()
+    config.test_json = str(PROJECT_ROOT / "Data" / "test_textified_detailed_instruction.json")
+    config.output_dir = str(PROJECT_ROOT / "Results")
+    
+    # Auto-detect adapter path: search for adapter_config.json under Models/
+    models_dir = PROJECT_ROOT / "Models"
+    adapter_path = None
+    if models_dir.exists():
+        for root, dirs, files in os.walk(str(models_dir)):
+            if "adapter_config.json" in files:
+                adapter_path = root
+                break
+    
+    if adapter_path:
+        config.adapter_path = adapter_path
+        print(f"[OK] Auto-detected adapter at: {adapter_path}")
+    else:
+        # Fallback to default path
+        config.adapter_path = str(models_dir / "phi2-kdd-lora" / "final")
+        print(f"[WARN] adapter_config.json not found under Models/")
+        print(f"       Trying default path: {config.adapter_path}")
+    
+    print(f"\nConfiguration:")
+    print(f"  - Model adapters: {config.adapter_path}")
+    print(f"  - Test data: {config.test_json}")
+    print(f"  - Output directory: {config.output_dir}")
     
     # Create output directory
     Path(config.output_dir).mkdir(parents=True, exist_ok=True)
@@ -683,9 +777,29 @@ def main():
     with open(config.test_json, 'r', encoding='utf-8') as f:
         test_data = json.load(f)
     
-    print(f"✓ Loaded {len(test_data):,} test samples")
+    print(f"[OK] Loaded {len(test_data):,} test samples")
     
-    # ========================================================================
+    # Subsample for CPU speed (full test set would take many hours on CPU)
+    if config.max_samples > 0 and len(test_data) > config.max_samples:
+        import random
+        random.seed(42)
+        # Stratified subsample: maintain class distribution
+        from collections import defaultdict
+        by_category = defaultdict(list)
+        for item in test_data:
+            by_category[item.get('attack_category', 'unknown')].append(item)
+        
+        sampled = []
+        for cat, items in by_category.items():
+            n = max(1, int(config.max_samples * len(items) / len(test_data)))
+            sampled.extend(random.sample(items, min(n, len(items))))
+        
+        # Shuffle
+        random.shuffle(sampled)
+        test_data = sampled[:config.max_samples]
+        print(f"[OK] Subsampled to {len(test_data):,} samples for CPU evaluation")
+        print(f"    (Set max_samples=0 to use full test set)")
+    
     # STEP 3: Run Inference
     # ========================================================================
     predictions = run_inference(model, tokenizer, test_data, config)
@@ -753,3 +867,4 @@ if __name__ == "__main__":
         - GPU recommended (but can run on CPU slowly)
     """
     main()
+

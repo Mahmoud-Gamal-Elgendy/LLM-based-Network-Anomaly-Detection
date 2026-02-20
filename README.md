@@ -4,112 +4,214 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Project Overview
+## Abstract
 
-A **research-grade implementation** of network intrusion detection using **Large Language Models (LLMs)** fine-tuned with **QLoRA (Quantized Low-Rank Adaptation)**. This project demonstrates how to apply modern AI techniques to cybersecurity, specifically for **6G Native AI** networks that require **explainable, autonomous security decisions**.
+This project investigates **parameter-efficient fine-tuning of a Large Language Model (LLM) for network intrusion detection**, framing the classification task as a natural language reasoning problem. We convert structured NSL-KDD network traffic features into natural language descriptions (*textification*), then fine-tune **Microsoft phi-2 (2.7B parameters)** using **QLoRA (4-bit quantization + LoRA adapters)** to classify traffic into five categories: Normal, DoS, Probe, R2L, and U2R.
 
-### Key Innovation
+The system generates human-readable classification outputs with natural language justifications, offering a step toward more interpretable network security decisions. This is an **experimental/research prototype** — results are preliminary and subject to the limitations discussed below.
 
-Unlike traditional ML models that provide predictions without reasoning, this system:
-- **Converts network traffic into natural language** (textification)
-- **Fine-tunes Microsoft's phi-2 (2.7B parameters)** to understand attack patterns
-- **Provides human-readable explanations** for every security decision (XAI)
-- **Achieves 85-95% accuracy** with only 0.6% of parameters trained (LoRA)
+### Research Questions
 
-### Real-World Application
-
-This approach is designed for **6G networks** where:
-- Network operators need to understand WHY traffic was flagged
-- Autonomous systems must explain decisions for regulatory compliance
-- Security teams require semantic understanding of attack patterns
+1. Can an LLM fine-tuned via QLoRA learn to classify network traffic from textified feature descriptions?
+2. Does the natural language generation paradigm produce outputs that are more interpretable than traditional classifier outputs?
+3. What are the failure modes when applying LLM-based classification to heavily imbalanced network security datasets?
 
 ---
 
-## Technical Approach
+## Methodology
 
 ### Pipeline Overview
 
 ```
-Raw Network Logs → Data Preprocessing → Textification → LLM Fine-Tuning → Explainable Predictions
+Raw NSL-KDD Logs → Preprocessing → Textification (NLG) → QLoRA Fine-Tuning → Inference & Evaluation
 ```
 
 ### 4-Module Architecture
 
-| Module | Purpose | Key Technique | Output |
-|--------|---------|---------------|--------|
-| **1. Data Preprocessing** | Clean and prepare NSL-KDD data | Label mapping, validation | Processed CSV files |
-| **2. Data Textification** | Convert to natural language | Template-based NLG | JSON instruction datasets |
-| **3. Model Fine-Tuning** | Train phi-2 with LoRA | QLoRA, 4-bit quantization | Fine-tuned model adapters |
-| **4. Evaluation** | Metrics and explainability | Confusion matrix, XAI analysis | Performance reports |
+| Module | Script | Purpose | Key Technique |
+|--------|--------|---------|---------------|
+| **1. Preprocessing** | `1_data_preprocessing.py` | Clean NSL-KDD, map 39 attack types → 5 categories | Label mapping, validation, missing value handling |
+| **2. Textification** | `2_data_textification.py` | Convert tabular features → natural language | Template-based NLG with conditional feature inclusion |
+| **3. Fine-Tuning** | `3_train_model.py` | Train phi-2 with QLoRA | 4-bit NF4 quantization, LoRA r=16, causal LM objective |
+| **4. Evaluation** | `4_evaluate_model.py` | Classification metrics, confusion matrix, output analysis | Greedy decoding, keyword extraction for label parsing |
 
-### Core Technologies
+### Textification Strategy
 
-- **Base Model:** Microsoft phi-2 (2.7B parameters)
-- **Fine-Tuning:** QLoRA (4-bit quantization + LoRA adapters)
-- **Framework:** HuggingFace Transformers + PEFT
-- **Dataset:** NSL-KDD (25,192 train, 22,544 test samples)
-- **Attack Categories:** Normal, DoS, Probe, R2L, U2R
+Each network connection record (41 numerical/categorical features) is converted to a natural language paragraph using template-based generation. Three verbosity levels are supported:
 
----
+- **Basic:** Protocol, service, flag, byte counts only
+- **Detailed:** Adds duration, connection counts, error rates (conditional inclusion)
+- **Rich:** All features including authentication events, privilege access, host statistics
 
-## Features
-
-### Technical Features
-
--  **Parameter-Efficient Fine-Tuning:** Only 0.6% of parameters trained (16M out of 2.7B)
--  **Memory-Optimized:** Runs on 8GB GPU (4-bit quantization)
--  **Production-Ready:** Modular code with comprehensive logging
--  **Reproducible:** All hyperparameters documented, seed=42
--  **Extensible:** Easy to swap models, datasets, or textification strategies
-
-### Research Features
-
--  **Multi-Class Classification:** 5 attack categories
--  **Comprehensive Metrics:** Accuracy, Precision, Recall, F1, Confusion Matrix
--  **Explainability Analysis:** XAI-compliant explanations
--  **Failure Case Analysis:** Identifies model limitations
--  **Publication-Quality Visualizations:** High-resolution plots
-
-### Explainable AI (XAI)
-
-**Example Output:**
+**Example (detailed verbosity):**
 ```
-Input: "A tcp connection to private service with connection status S0. 
-        was instantaneous. transferred 0 bytes. was part of 123 
-        connections to the same host. had high SYN error rate (1.00)."
-
-Model: "This network traffic shows signs of denial of service attack 
-        (specifically: neptune). Classification: dos"
-
-Explanation: Model identifies SYN flood pattern (123 connections, 100% error rate)
+Input:  [tcp, private, S0, 0, 0, count=283, serror_rate=1.00, ...]
+Output: "A tcp connection to private service with connection status S0.
+         was instantaneous. transferred 0 bytes from source and 0 bytes
+         from destination. was part of 283 connections to the same host
+         in the past 2 seconds. had high SYN error rate (1.00)."
 ```
+
+> **Note:** The conditional inclusion of features (e.g., `serror_rate` only reported when > 0.5) introduces **information loss** for subtle attack patterns. This is a known limitation — see [Limitations](#limitations).
+
+### Fine-Tuning Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Base model | microsoft/phi-2 (2.7B) | Small enough for consumer GPU; strong reasoning capabilities |
+| Quantization | NF4, double quantization | Reduces memory to ~2GB; enables 8GB GPU training |
+| LoRA rank (r) | 16 | Balance between capacity and parameter efficiency |
+| LoRA alpha | 32 | Standard 2× rank scaling |
+| LoRA dropout | 0.05 | Light regularization |
+| Target modules | q_proj, k_proj, v_proj, dense, fc1, fc2 | Full attention + FFN coverage |
+| Trainable parameters | ~16M / 2.7B (**0.6%**) | Parameter-efficient fine-tuning |
+| Epochs | 1 | Training loss plateaus early; more epochs risk overfitting |
+| Effective batch size | 16 (4 × 4 accumulation) | Memory-constrained choice |
+| Learning rate | 2e-4 (linear decay, 50-step warmup) | Standard for LoRA fine-tuning |
+| Optimizer | Paged AdamW 8-bit | Memory-efficient variant |
+| Max sequence length | 256 tokens | Covers >99% of samples; reduces padding waste |
+| Training objective | Causal LM (next-token prediction) | Standard for instruction tuning |
+
+**Training Dynamics (1 epoch, 1,575 steps):**
+- Loss: 3.37 → 0.12 (rapid convergence in first 200 steps, plateau thereafter)
+- Gradient norm: stabilized ~0.15 after step 200
+- Eval loss at step 1500: 0.1997
 
 ---
 
 ## Dataset: NSL-KDD
 
-This project uses the **NSL-KDD dataset**, an industry-standard benchmark for Intrusion Detection Systems.
+### Overview
 
-### Why NSL-KDD?
+The **NSL-KDD** dataset is a refined version of KDD Cup '99 with redundant records removed. It contains 41 features per network connection and 39 specific attack types grouped into 5 categories.
 
--  Refined version of KDD'99 (removed redundant records)
--  Balanced train/test split
--  Covers 5 main categories: Normal, DoS, Probe, R2L, U2R
--  41 features per network connection
--  Multiple attack types per category (39 specific attacks)
+### Class Distribution
 
-### Dataset Statistics
+| Split | Total | Normal | DoS | Probe | R2L | U2R |
+|-------|-------|--------|-----|-------|-----|-----|
+| **Train** | 25,192 | 53.4% | 36.7% | 9.1% | 0.8% | **0.04%** |
+| **Test** | 22,544 | 43.1% | 33.1% | 10.7% | **12.8%** | 0.3% |
 
-| Split | Samples | Normal | DoS | Probe | R2L | U2R |
-|-------|---------|--------|-----|-------|-----|-----|
-| **Train** | 25,192 | 53.4% | 36.7% | 9.1% | 0.8% | 0.04% |
-| **Test** | 22,544 | 43.1% | 33.1% | 10.7% | 12.8% | 0.3% |
+> **Critical imbalance:** U2R has only ~10 training samples. R2L has ~200 training samples but 12.8% of the test set — a significant distribution shift between train and test.
 
-### Download Dataset
+### Dataset Limitations
 
- [NSL-KDD on Kaggle](https://www.kaggle.com/datasets/hassan06/nslkdd)
+- **Temporal relevance:** NSL-KDD is derived from 1998 DARPA data. Attack patterns do not represent modern network threats, and results should not be extrapolated to production environments.
+- **Synthetic origin:** Traffic was generated in a controlled testbed, not captured from real networks.
+- **Feature engineering:** The 41 features were pre-engineered by domain experts — the LLM operates on textified versions of these features, not raw packet data.
+- **Standard benchmark only:** We use NSL-KDD as a well-understood benchmark for comparing approaches, not as evidence of real-world viability.
 
-Place `KDDTrain.txt` and `KDDTest.txt` in the `Data/` folder.
+### Download
+
+[NSL-KDD on Kaggle](https://www.kaggle.com/datasets/hassan06/nslkdd) — place `KDDTrain.txt` and `KDDTest.txt` in `Data/`.
+
+---
+
+## Results
+
+### Experimental Setup
+
+- **Training:** 1 epoch on full training set (25,192 samples), NVIDIA GPU with CUDA
+- **Evaluation:** Stratified subsample of **199 test samples** (due to CPU inference constraints)
+- **Decoding:** Greedy (temperature=0, no sampling) for reproducibility
+- **Label extraction:** Keyword matching on generated text
+
+> **Important:** All metrics below are from a 199-sample subsample, not the full 22,544-sample test set. Per-class metrics for minority classes (especially U2R with n=1) are **not statistically reliable**. Full test set evaluation on GPU is needed for publication-quality results.
+
+### Observed Performance
+
+| Metric | Value |
+|--------|-------|
+| **Accuracy** | 74.37% |
+| **Macro Precision** | 0.4449 |
+| **Macro Recall** | 0.4902 |
+| **Macro F1** | 0.4637 |
+| **Weighted Precision** | 0.6593 |
+| **Weighted Recall** | 0.7437 |
+| **Weighted F1** | 0.6937 |
+
+### Per-Class Breakdown
+
+| Category | Precision | Recall | F1-Score | Support (n) |
+|----------|-----------|--------|----------|-------------|
+| **DoS** | 0.885 | 0.818 | 0.850 | 66 |
+| **Normal** | 0.687 | 0.919 | 0.786 | 86 |
+| **Probe** | 0.652 | 0.714 | 0.682 | 21 |
+| **R2L** | 0.000 | 0.000 | 0.000 | 25 |
+| **U2R** | 0.000 | 0.000 | 0.000 | 1 |
+
+### Confusion Matrix
+
+|  | Pred: DoS | Pred: Normal | Pred: Probe | Pred: R2L | Pred: U2R |
+|---|---|---|---|---|---|
+| **True: DoS** | **54** | 10 | 2 | 0 | 0 |
+| **True: Normal** | 4 | **79** | 3 | 0 | 0 |
+| **True: Probe** | 3 | 3 | **15** | 0 | 0 |
+| **True: R2L** | 0 | 22 | 3 | **0** | 0 |
+| **True: U2R** | 0 | 1 | 0 | 0 | **0** |
+
+### Analysis
+
+**What works:**
+- **DoS detection** (F1=0.85) — high connection counts and SYN error rates provide clear textual signals that the model learned
+- **Normal traffic** (F1=0.79) — the model correctly identifies standard connection patterns
+
+**What fails:**
+- **R2L (F1=0.00)** — all 25 R2L samples were misclassified, primarily as "normal" (22/25). R2L attacks (e.g., `warezmaster`, `guess_passwd`) often resemble normal connections in their textified form, lacking distinctive traffic-level signatures
+- **U2R (F1=0.00)** — only 1 test sample; completely undetectable given ~10 training examples
+- **Normal bias** — the model's 91.9% recall on normal traffic comes at the cost of absorbing R2L and U2R samples as false negatives
+
+### Sample Outputs
+
+**Correct DoS detection:**
+```
+Input:  "A tcp connection to gopher service with connection status S0.
+         was instantaneous. transferred 0 bytes... was part of 283
+         connections to the same host... had high SYN error rate (1.00)."
+
+Output: "This network traffic shows signs of denial of service attack
+         (specifically: neptune). Classification: dos"
+```
+
+**Failure case (R2L → Normal):**
+```
+Input:  "A tcp connection to ftp_data service with connection status SF.
+         lasted 280 seconds. transferred 283618 bytes from source and
+         0 bytes from destination."
+
+Output: "This network traffic represents normal network activity.
+         Classification: normal."
+
+True label: r2l (warezmaster)
+```
+
+> The R2L failure illustrates a fundamental limitation: the textified description of this `warezmaster` attack is indistinguishable from legitimate FTP activity when only traffic-level features are described. Content-based features (which are sparse for R2L in the training data) are needed but were not prominently represented in the textification.
+
+---
+
+## Limitations
+
+### Methodological Limitations
+
+1. **Evaluation sample size.** Metrics are from 199 subsampled test instances. Per-class statistics for R2L (n=25) and U2R (n=1) have no statistical power. Full test set evaluation is required.
+
+2. **No held-out validation set.** The test JSON is used as the eval set during training, meaning checkpoint selection is influenced by test performance. This constitutes **mild information leakage** — a proper 3-way split (train/val/test) is needed.
+
+3. **No baseline comparisons.** No traditional ML baselines (Random Forest, XGBoost, SVM) or other LLM configurations were trained on the same data. Without baselines, the results cannot be contextualized.
+
+4. **No statistical rigor.** Single run, single seed (42), no confidence intervals, no significance testing. Results may not be reproducible across random seeds.
+
+5. **Causal LM loss over full sequence.** The training objective computes loss over the entire prompt (instruction + input + output), wasting model capacity on predicting instruction tokens. Masking the instruction/input tokens in the loss would focus learning on the classification output.
+
+### Technical Limitations
+
+6. **Information loss in textification.** Conditional feature inclusion (thresholds like `serror_rate > 0.5`) discards low-magnitude signals. Continuous features are converted to text with limited precision. The ordering and phrasing of features may introduce unwanted inductive biases.
+
+7. **Class imbalance unaddressed.** No oversampling, class weighting, or focal loss. U2R (~10 training samples) and R2L (~200 samples) are effectively unlearnable at this scale.
+
+8. **Template-based output ≠ true XAI.** The model generates text from memorized training templates (e.g., "This network traffic shows signs of..."). It does not perform feature attribution, attention-based explanation, or counterfactual reasoning. The outputs are better described as **natural language classification** than explainable AI.
+
+9. **Dataset age.** NSL-KDD (derived from 1998 data) does not reflect modern attack patterns, encrypted traffic, or contemporary protocols. Results do not generalize to production network security.
 
 ---
 
@@ -119,38 +221,38 @@ Place `KDDTrain.txt` and `KDDTest.txt` in the `Data/` folder.
 LLM-based Network Anomaly Detection/
 │
 ├── Data/
-│   ├── KDDTrain.txt                                   # Raw training data
-│   ├── KDDTest.txt                                    # Raw test data
-│   ├── train_processed.csv                            # Module 1 output
-│   ├── test_processed.csv                             # Module 1 output
-│   ├── attack_mapping.json                            # Label mapping
-│   ├── train_textified_detailed_instruction.json      # Module 2 output
-│   └── test_textified_detailed_instruction.json       # Module 2 output
+│   ├── KDDTrain.txt                                   # Raw NSL-KDD training data
+│   ├── KDDTest.txt                                    # Raw NSL-KDD test data
+│   ├── train_processed.csv                            # Preprocessed training data
+│   ├── test_processed.csv                             # Preprocessed test data
+│   ├── attack_mapping.json                            # 39 attacks → 5 categories
+│   ├── train_textified_detailed_instruction.json      # Textified training set
+│   └── test_textified_detailed_instruction.json       # Textified test set
 │
 ├── Scripts/
-│   ├── 1_data_preprocessing.py                        # Data cleaning & mapping
-│   ├── 2_data_textification.py                        # Text conversion
-│   ├── 3_train_model.py                               # Model fine-tuning
-│   └── 4_evaluate_model.py                            # Evaluation & metrics
+│   ├── 1_data_preprocessing.py                        # Data loading, cleaning, mapping
+│   ├── 2_data_textification.py                        # Feature → natural language conversion
+│   ├── 3_train_model.py                               # QLoRA fine-tuning pipeline
+│   └── 4_evaluate_model.py                            # Inference, metrics, analysis
 │
-├── Models/                                            # Created during training
+├── Models/
 │   └── phi2-kdd-lora/
-│       ├── checkpoint-XXX/                            # Training checkpoints
-│       └── final/                                     # Best model
+│       └── final/                                     # Trained LoRA adapter weights
 │           ├── adapter_config.json
-│           ├── adapter_model.bin                      # LoRA weights (~65MB)
-│           └── tokenizer files
+│           ├── adapter_model.safetensors               # ~65 MB
+│           ├── tokenizer.json
+│           └── tokenizer_config.json
 │
-├── Results/                                           # Created during evaluation
-│   ├── metrics.json                                   # Performance metrics
-│   ├── predictions.json                               # All predictions
-│   ├── confusion_matrix.png                           # Visualization
-│   ├── per_class_metrics.png                          # Visualization
+├── Results/
+│   ├── metrics.json                                   # All evaluation metrics
+│   ├── predictions.json                               # Per-sample predictions
+│   ├── confusion_matrix.png                           # Confusion matrix heatmap
+│   ├── per_class_metrics.png                          # Per-class bar chart
 │   └── evaluation_report.txt                          # Summary report
 │
-├── requirements.txt                                   # Python dependencies
-├── README.md                                          # This file
-└── LICENSE                                            # MIT License
+├── requirements.txt
+├── README.md
+└── LICENSE
 ```
 
 ---
@@ -159,214 +261,119 @@ LLM-based Network Anomaly Detection/
 
 ### Prerequisites
 
-- **Python:** 3.8 or higher
-- **CUDA:** 11.8 or 12.1 (for GPU support)
-- **GPU:** NVIDIA GPU with 8GB+ VRAM (recommended)
-- **RAM:** 16GB+ system RAM
-- **Storage:** 50GB free space
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| Python | 3.8+ | 3.10+ |
+| CUDA | 11.8 | 12.1 |
+| GPU VRAM | 8 GB | 16 GB |
+| System RAM | 16 GB | 32 GB |
+| Disk space | 20 GB | 50 GB |
 
-### Step 1: Clone Repository
+> **CPU-only:** Training is not feasible on CPU. Evaluation can run on CPU but takes several hours for the full test set.
+
+### Setup
 
 ```bash
+# 1. Clone repository
 git clone <repository-url>
 cd "LLM-based Network Anomaly Detection"
-```
 
-### Step 2: Install PyTorch with CUDA
+# 2. Install PyTorch with CUDA (choose your CUDA version)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118  # CUDA 11.8
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121  # CUDA 12.1
 
-**For CUDA 11.8:**
-```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-
-**For CUDA 12.1:**
-```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-```
-
-**For CPU only (not recommended for training):**
-```bash
-pip install torch torchvision torchaudio
-```
-
-### Step 3: Install Other Dependencies
-
-```bash
+# 3. Install project dependencies
 pip install -r requirements.txt
 ```
-
 
 ---
 
 ## Usage
 
-### Quick Start (All 4 Modules)
+### Running the Full Pipeline
 
 ```bash
 cd Scripts
 
-# Module 1: Data Preprocessing (2-3 minutes)
+# Module 1: Preprocessing (~2 min)
 python 1_data_preprocessing.py
 
-# Module 2: Data Textification (3-5 minutes)
+# Module 2: Textification (~5 min)
 python 2_data_textification.py
 
-# Module 3: Model Fine-Tuning (1-4 hours depending on GPU)
+# Module 3: Fine-Tuning (~2-3 hours on T4/RTX 3080)
 python 3_train_model.py
 
-# Module 4: Evaluation (10-15 minutes)
+# Module 4: Evaluation (~15 min GPU / several hours CPU)
 python 4_evaluate_model.py
 ```
 
-### Detailed Usage
+### Module Details
 
 #### Module 1: Data Preprocessing
 
-**Purpose:** Load, clean, and map NSL-KDD data.
-
-```bash
-python 1_data_preprocessing.py
-```
-
-**What it does:**
-- Loads 25,192 training and 22,544 test samples
-- Maps 38 specific attacks → 5 broad categories
-- Validates data quality
-- Saves processed CSV files
-
-**Output:**
-- `Data/train_processed.csv` (3.52 MB)
-- `Data/test_processed.csv` (3.16 MB)
-- `Data/attack_mapping.json`
-
----
+Loads raw NSL-KDD text files, cleans labels (strips trailing dots), maps 39 specific attack types to 5 broad categories using a predefined dictionary, validates data quality, and exports processed CSVs.
 
 #### Module 2: Data Textification
 
-**Purpose:** Convert structured data to natural language.
+Converts each of the 41 numerical/categorical features into natural language using template functions. Supports three verbosity levels (`basic`, `detailed`, `rich`) and two output formats (`instruction`, `prompt_completion`). Default: `detailed` + `instruction`.
 
-```bash
-python 2_data_textification.py
-```
-
-**Configuration options** (edit in script):
+**Configuration** (edit in script):
 ```python
-VERBOSITY = 'detailed'      # Options: 'basic', 'detailed', 'rich'
-FORMAT_TYPE = 'instruction'  # Options: 'instruction', 'prompt_completion'
+VERBOSITY = 'detailed'      # 'basic', 'detailed', 'rich'
+FORMAT_TYPE = 'instruction'  # 'instruction', 'prompt_completion'
 ```
 
-**What it does:**
-- Converts each network connection to human-readable text
-- Creates instruction-following format for phi-2
-- Generates training and test JSON files
+#### Module 3: Fine-Tuning
 
-**Output:**
-- `Data/train_textified_detailed_instruction.json` (15.86 MB)
-- `Data/test_textified_detailed_instruction.json` (14.22 MB)
-
----
-
-#### Module 3: Model Fine-Tuning
-
-**Purpose:** Fine-tune phi-2 with LoRA on textified data.
-
-```bash
-python 3_train_model.py
-```
-
-**Training configuration** (edit in script):
-```python
-num_train_epochs = 3           # Number of epochs
-per_device_train_batch_size = 4  # Batch size per GPU
-learning_rate = 2e-4           # Learning rate for LoRA
-```
-
-**What it does:**
-- Loads phi-2 with 4-bit quantization
-- Applies LoRA adapters (r=16, alpha=32)
-- Trains on 25,192 samples for 3 epochs
-- Saves checkpoints every 200 steps
-- Logs metrics to TensorBoard
+Loads phi-2 with 4-bit NF4 quantization via bitsandbytes, applies LoRA adapters to all attention and FFN layers, and trains using HuggingFace Trainer with paged AdamW 8-bit. Includes gradient flow verification, gradient checkpointing with `use_reentrant=False`, and automatic checkpoint resumption.
 
 **Monitoring:**
 ```bash
-# In another terminal
-tensorboard --logdir ../Models/logs
-# Open browser: http://localhost:6006
+tensorboard --logdir Models/logs
 ```
-
-**Output:**
-- `Models/phi2-kdd-lora/final/` (best model, ~65MB)
-- Training logs and checkpoints
-
-
----
 
 #### Module 4: Evaluation
 
-**Purpose:** Evaluate model performance and generate reports.
+Loads the trained adapter, runs greedy inference on the test set (or a stratified subsample), extracts predicted labels via keyword matching, and computes accuracy, precision, recall, F1 (macro and weighted), confusion matrix, and per-class breakdowns. Exports all results to `Results/`.
 
-```bash
-python 4_evaluate_model.py
+**Configuration** (edit in script):
+```python
+max_samples = 200   # Set to 0 for full test set (requires GPU)
+do_sample = False   # Greedy decoding
 ```
 
-**What it does:**
-- Loads fine-tuned model with LoRA adapters
-- Runs inference on 22,544 test samples
-- Computes classification metrics
-- Generates confusion matrix and visualizations
-- Analyzes explainability and failure cases
-- Saves comprehensive results
-
-**Output:**
-- `Results/metrics.json` - All metrics
-- `Results/predictions.json` - Full predictions
-- `Results/confusion_matrix.png` - Heatmap
-- `Results/per_class_metrics.png` - Bar chart
-- `Results/evaluation_report.txt` - Summary
 ---
-## Results
+## Reproducibility
 
-### Performance Benchmarks
+| Item | Value |
+|------|-------|
+| Random seed | 42 |
+| Training epochs | 1 |
+| Total training steps | 1,575 |
+| Final training loss | 0.118 |
+| Eval loss (step 1500) | 0.200 |
+| PEFT version | 0.18.1 |
+| Quantization | NF4, double quant, float16 compute |
+| Evaluation subsample | 199 samples (stratified) |
 
-| Metric |  Range | Notes |
-|--------|---------------|-------|
-| **Overall Accuracy** | 85-95% | Competitive with state-of-the-art |
-| **Weighted F1-Score** | 0.85-0.92 | Accounts for class imbalance |
-| **Normal Detection** | 95-98% F1 | Largest class, clear patterns |
-| **DoS Detection** | 90-95% F1 | SYN floods, easy to detect |
-| **Probe Detection** | 85-92% F1 | Port scanning patterns |
-| **R2L Detection** | 70-85% F1 | Harder, stealthy attacks |
-| **U2R Detection** | 60-80% F1 | Rarest class (67 test samples) |
-
-### Comparison with Traditional ML
-
-| Method | Accuracy | F1 (Macro) | Training Time | Explainability |
-|--------|----------|------------|---------------|----------------|
-| Random Forest | 85-88% | 0.75-0.80 | 5 minutes |  No |
-| XGBoost | 87-90% | 0.78-0.82 | 10 minutes |  No |
-| LSTM | 88-91% | 0.80-0.84 | 2 hours |  No |
-| **phi-2 + LoRA** | **90-95%** | **0.85-0.92** | 2-3 hours |  **Yes** |
-
-**Key Advantage:** Similar accuracy + natural language explanations
+To reproduce: run Modules 1–4 sequentially. The model checkpoint is included in `Models/phi2-kdd-lora/final/`. The base model (phi-2) will be downloaded automatically from HuggingFace Hub on first run (~5 GB).
 
 ---
 
 ## Acknowledgments
 
-- **Microsoft Research** for phi-2 model
-- **HuggingFace** for transformers and PEFT libraries
-- **NSL-KDD** dataset creators
-- **QLoRA authors** (Dettmers et al., 2023) for quantization techniques
+- **Microsoft Research** for the phi-2 model
+- **HuggingFace** for transformers, PEFT, and datasets libraries
+- **NSL-KDD** dataset creators (University of New Brunswick)
+- **bitsandbytes** authors for quantization support
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 
 ---
-Author
----
-Mahmoud Youssef 
----
+
+**Author:** Mahmoud Youssef

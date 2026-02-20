@@ -1,0 +1,18 @@
+======================================================================
+NETWORK ANOMALY DETECTION - EVALUATION REPORT
+Model: phi-2 (2.7B) Fine-tuned with LoRA
+======================================================================
+
+OVERALL METRICS:
+  Accuracy: 0.7437
+  Macro F1: 0.4637
+  Weighted F1: 0.6937
+
+PER-CLASS PERFORMANCE:
+Category        Precision    Recall       F1           Support   
+----------------------------------------------------------------------
+dos                 0.8852      0.8182      0.8504        66
+normal              0.6870      0.9186      0.7861        86
+probe               0.6522      0.7143      0.6818        21
+r2l                 0.0000      0.0000      0.0000        25
+u2r                 0.0000      0.0000      0.0000         1

@@ -1,0 +1,1793 @@
+[
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 210 bytes from source and 1170 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "gopher",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to gopher service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 283 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. lasted 280 seconds. transferred 283618 bytes from source and 0 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 292 bytes from source and 1767 bytes from destination. was part of 10 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 282 bytes from source and 263 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 258 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 283 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "ctf",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to ctf service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 300 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. lasted 280 seconds. transferred 283618 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "time",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to time service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 175 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "probe",
+    "original_attack": "snmpguess",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: nmap). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 54 bytes from source and 0 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 284 bytes from source and 7703 bytes from destination. was part of 29 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. lasted 7316 seconds. transferred 0 bytes from source and 44 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 234 bytes from source and 586 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "satan",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 1 bytes from source and 1 bytes from destination. was part of 47 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to ftp_data service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 77 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 267 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "imap4",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification: probe.",
+    "full_input": "A tcp connection to imap4 service with connection status RSTO. was instantaneous. transferred 0 bytes from source and 44 bytes from destination. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 289 bytes from source and 1100 bytes from destination. was part of 20 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. lasted 8201 seconds. transferred 0 bytes from source and 15 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 326 bytes from source and 188 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 43 bytes from source and 131 bytes from destination. was part of 17 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp service with connection status SF. lasted 282 seconds. transferred 160 bytes from source and 599 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 36 bytes from source and 0 bytes from destination. was part of 5 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 233 bytes from source and 9284 bytes from destination. was part of 9 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. lasted 280 seconds. transferred 283618 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 99 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 188 bytes from source and 7203 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 301 bytes from source and 1075 bytes from destination. was part of 7 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "satan",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 1 bytes from source and 1 bytes from destination. was part of 135 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status SF. was instantaneous. transferred 1202 bytes from source and 397 bytes from destination."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. was instantaneous. transferred 12 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 273 bytes from source and 1337 bytes from destination. was part of 27 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "icmp",
+    "service": "urp_i",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A icmp connection to urp_i service with connection status SF. was instantaneous. transferred 36 bytes from source and 0 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "probe",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: probe (reconnaissance). Classification: probe (reconnaissance). Classification: probe (reconnaissance",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1032 bytes from source and 0 bytes from destination. was part of 228 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. was instantaneous. transferred 12 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "nntp",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to nntp service with connection status RSTO. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 201 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 230 bytes from source and 3090 bytes from destination. was part of 7 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "guess_passwd",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. was instantaneous. transferred 123 bytes from source and 174 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 263 bytes from source and 777 bytes from destination. was part of 15 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 237 bytes from source and 19075 bytes from destination. was part of 9 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 241 bytes from source and 10194 bytes from destination. was part of 5 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 794 seconds. transferred 1024 bytes from source and 0 bytes from destination. was part of 81 connections to the same host in the past 2 seconds. had high REJ error rate (0.98)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: probe (reconnaissance). Classification: u2r (specifically: nmap). Classification: normal",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 40008 bytes from source and 0 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "probe",
+    "original_attack": "snmpguess",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: nmap). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 47 bytes from source and 0 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 137 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "imap4",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification: probe.",
+    "full_input": "A tcp connection to imap4 service with connection status RSTO. was instantaneous. transferred 0 bytes from source and 44 bytes from destination. was part of 3 connections to the same host in the past 2 seconds. had high REJ error rate (0.67)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status S3. was instantaneous. transferred 0 bytes from source and 44 bytes from destination. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. lasted 7332 seconds. transferred 0 bytes from source and 44 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 320 bytes from source and 1678 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. was instantaneous. transferred 37 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 120 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "u2r",
+    "predicted_label": "normal",
+    "original_attack": "xterm",
+    "protocol": "tcp",
+    "service": "ftp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp service with connection status SF. lasted 21 seconds. transferred 132 bytes from source and 572 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "dos",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: teardrop). Classification: dos (specifically: teardrop).",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 52 bytes from source and 54 bytes from destination. was part of 511 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to other service with connection status RSTO. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 290 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 212 bytes from source and 12094 bytes from destination. was part of 4 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 238 bytes from source and 573 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. lasted 7963 seconds. transferred 0 bytes from source and 44 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "IRC",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to IRC service with connection status RSTR. lasted 8579 seconds. transferred 1434 bytes from source and 6725 bytes from destination. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 157 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status SF. lasted 1 seconds. transferred 20879 bytes from source and 327 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 233 bytes from source and 170 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "back",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back). Classification: dos (specifically: back). Classification: dos (specifically: back). Classification: dos (specifically:",
+    "full_input": "A tcp connection to http service with connection status S1. was instantaneous. transferred 54540 bytes from source and 8314 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 287 bytes from source and 1790 bytes from destination. was part of 16 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "dos",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: teardrop). Classification: dos (specifically: teardrop).",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 54 bytes from source and 51 bytes from destination. was part of 509 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 163 bytes from source and 3365 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "systat",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to systat service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 214 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "normal",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status RSTO. was instantaneous. transferred 0 bytes from source and 15 bytes from destination. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 43 bytes from source and 77 bytes from destination. was part of 152 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "probe",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 56 bytes from source and 52 bytes from destination. was part of 325 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "rje",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to rje service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 287 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 243 bytes from source and 2211 bytes from destination. was part of 21 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. lasted 280 seconds. transferred 283618 bytes from source and 0 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 242 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 337 bytes from source and 16255 bytes from destination."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "guess_passwd",
+    "protocol": "tcp",
+    "service": "pop_3",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to pop_3 service with connection status SF. lasted 5 seconds. transferred 28 bytes from source and 93 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 196 bytes from source and 763 bytes from destination."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp service with connection status SF. lasted 281 seconds. transferred 162 bytes from source and 597 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. lasted 61 seconds. transferred 214 bytes from source and 170 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 293 bytes from source and 3410 bytes from destination. was part of 20 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "snmpguess",
+    "protocol": "icmp",
+    "service": "urp_i",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A icmp connection to urp_i service with connection status SF. was instantaneous. transferred 36 bytes from source and 0 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 223 bytes from source and 397 bytes from destination. was part of 12 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 2058 seconds. transferred 74024 bytes from source and 0 bytes from destination. was part of 9 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 789 seconds. transferred 22624 bytes from source and 1 bytes from destination. was part of 29 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 356 bytes from source and 7273 bytes from destination. was part of 38 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "back",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 54540 bytes from source and 8314 bytes from destination. was part of 4 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status SF. lasted 2 seconds. transferred 1115 bytes from source and 332 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 898 seconds. transferred 76944 bytes from source and 0 bytes from destination. was part of 25 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "dos",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: teardrop). Classification: dos (specifically: teardrop).",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 54 bytes from source and 55 bytes from destination. was part of 509 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. was instantaneous. transferred 1698 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status S3. was instantaneous. transferred 0 bytes from source and 44 bytes from destination. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 238 bytes from source and 2936 bytes from destination. was part of 5 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 228 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 45 bytes from source and 73 bytes from destination. was part of 215 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 326 bytes from source and 2445 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 262 bytes from source and 382 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 293 bytes from source and 3005 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 293 bytes from source and 3410 bytes from destination. was part of 13 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "imap4",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification:",
+    "full_input": "A tcp connection to imap4 service with connection status RSTO. lasted 3 seconds. transferred 0 bytes from source and 44 bytes from destination. was part of 2 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 110 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "dos",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "pop_3",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).",
+    "full_input": "A tcp connection to pop_3 service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 291 bytes from source and 256 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 228 bytes from source and 2324 bytes from destination. was part of 13 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 79 bytes from source and 45 bytes from destination. was part of 281 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "snmpgetattack",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 105 bytes from source and 147 bytes from destination."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "satan",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to other service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 511 connections to the same host in the past 2 seconds. had high REJ error rate (0.85)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 325 bytes from source and 188 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 258 bytes from source and 544 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 324 bytes from source and 392 bytes from destination. was part of 26 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "ipsweep",
+    "protocol": "icmp",
+    "service": "eco_i",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: ipsweep). Classification: probe.",
+    "full_input": "A icmp connection to eco_i service with connection status SF. was instantaneous. transferred 8 bytes from source and 0 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).",
+    "full_input": "A tcp connection to private service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 142 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "guess_passwd",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. was instantaneous. transferred 126 bytes from source and 174 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 222 bytes from source and 827 bytes from destination. was part of 7 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 217 bytes from source and 702 bytes from destination. was part of 15 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "portsweep",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification: probe.",
+    "full_input": "A tcp connection to private service with connection status RSTR. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 207 bytes from source and 4539 bytes from destination. was part of 42 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "back",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 54540 bytes from source and 8314 bytes from destination. was part of 4 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 322 bytes from source and 1024 bytes from destination. was part of 27 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: probe (reconnaissance). Classification: r2l (specifically: nmap). Classification: u",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1032 bytes from source and 0 bytes from destination. was part of 287 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 2066 seconds. transferred 56504 bytes from source and 0 bytes from destination. was part of 10 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "guess_passwd",
+    "protocol": "tcp",
+    "service": "pop_3",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to pop_3 service with connection status SF. lasted 4 seconds. transferred 26 bytes from source and 93 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 140 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "satan",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 204 connections to the same host in the past 2 seconds. had high REJ error rate (0.87)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "normal",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. was instantaneous. transferred 0 bytes from source and 0 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1032 bytes from source and 0 bytes from destination. was part of 72 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "saint",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to other service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 490 connections to the same host in the past 2 seconds. had high REJ error rate (0.94)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "guess_passwd",
+    "protocol": "tcp",
+    "service": "pop_3",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to pop_3 service with connection status SF. lasted 4 seconds. transferred 31 bytes from source and 93 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "auth",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to auth service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 278 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. lasted 280 seconds. transferred 283618 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 235 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 214 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "probe",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 122 connections to the same host in the past 2 seconds. had high REJ error rate (0.55)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 233 bytes from source and 814 bytes from destination. was part of 6 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 263 bytes from source and 391 bytes from destination. was part of 24 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: dos (specifically: neptune). Classification: dos (specifically: nmap). Classification:",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 520 bytes from source and 0 bytes from destination. was part of 244 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "saint",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to other service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 491 connections to the same host in the past 2 seconds. had high REJ error rate (0.90)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status SF. was instantaneous. transferred 990 bytes from source and 336 bytes from destination."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "portsweep",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification: probe.",
+    "full_input": "A tcp connection to private service with connection status RSTR. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "back",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 54540 bytes from source and 8314 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "satan",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to other service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 511 connections to the same host in the past 2 seconds. had high REJ error rate (0.93)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 218 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 428 bytes from source and 186 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "probe",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 1 bytes from source and 1 bytes from destination. was part of 14 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "normal",
+    "original_attack": "satan",
+    "protocol": "udp",
+    "service": "other",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to other service with connection status SF. was instantaneous. transferred 1 bytes from source and 1 bytes from destination. was part of 56 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 215 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "snmpgetattack",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 105 bytes from source and 146 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1008 bytes from source and 0 bytes from destination. was part of 166 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp service with connection status SF. lasted 283 seconds. transferred 164 bytes from source and 601 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 196 bytes from source and 14774 bytes from destination."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "probe",
+    "original_attack": "snmpguess",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: nmap). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 40 bytes from source and 0 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 20 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "ldap",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to ldap service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 130 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 235 bytes from source and 3313 bytes from destination. was part of 9 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 352 bytes from source and 1631 bytes from destination. was part of 10 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 235 bytes from source and 280 bytes from destination. was part of 6 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 285 bytes from source and 10216 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "probe",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 1 bytes from source and 1 bytes from destination. was part of 23 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "satan",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: satan). Classification: probe.",
+    "full_input": "A tcp connection to other service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 448 connections to the same host in the past 2 seconds. had high REJ error rate (0.99)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 148 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 145 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 340 bytes from source and 5291 bytes from destination. was part of 14 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "dos",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "imap4",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).",
+    "full_input": "A tcp connection to imap4 service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "mailbomb",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status SF. lasted 1 seconds. transferred 2599 bytes from source and 293 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "dos",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: teardrop). Classification: dos (specifically: teardrop).",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 55 bytes from source and 55 bytes from destination. was part of 511 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 330 bytes from source and 1115 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "smtp",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to smtp service with connection status SF. lasted 1 seconds. transferred 4764 bytes from source and 333 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. lasted 7236 seconds. transferred 0 bytes from source and 44 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 329 bytes from source and 2056 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "back",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 54540 bytes from source and 8314 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 44 bytes from source and 44 bytes from destination. was part of 6 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "probe",
+    "original_attack": "mscan",
+    "protocol": "tcp",
+    "service": "imap4",
+    "generated_text": "This network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification: probe.\n\n### Classification:\nThis network traffic shows signs of network reconnaissance or probing attack (specifically: portsweep). Classification:",
+    "full_input": "A tcp connection to imap4 service with connection status RSTO. lasted 1 seconds. transferred 0 bytes from source and 44 bytes from destination. was part of 2 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 209 bytes from source and 7549 bytes from destination. was part of 5 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: probe (reconnaissance). Classification: r2l (specifically: nmap). Classification: u",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1008 bytes from source and 0 bytes from destination. was part of 328 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 221 bytes from source and 1011 bytes from destination. was part of 4 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "httptunnel",
+    "protocol": "tcp",
+    "service": "other",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to other service with connection status SF. lasted 300 seconds. transferred 244 bytes from source and 619 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 263 bytes from source and 415 bytes from destination. was part of 19 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "normal",
+    "original_attack": "processtable",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. lasted 7485 seconds. transferred 0 bytes from source and 44 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1008 bytes from source and 0 bytes from destination. was part of 461 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "guess_passwd",
+    "protocol": "tcp",
+    "service": "telnet",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to telnet service with connection status SF. was instantaneous. transferred 121 bytes from source and 174 bytes from destination."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "sql_net",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to sql_net service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 168 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "probe",
+    "predicted_label": "dos",
+    "original_attack": "saint",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (specifically: neptune).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: ne",
+    "full_input": "A tcp connection to private service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 338 connections to the same host in the past 2 seconds. had high REJ error rate (0.91)."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "warezmaster",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to ftp_data service with connection status SF. lasted 280 seconds. transferred 283618 bytes from source and 0 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "uucp_path",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to uucp_path service with connection status REJ. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 281 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune). Classification: dos (specifically: neptune",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1008 bytes from source and 0 bytes from destination. was part of 218 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: dos (specifically: neptune). Classification: dos (specifically: nmap). Classification:",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 1008 bytes from source and 0 bytes from destination. was part of 258 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "r2l",
+    "predicted_label": "normal",
+    "original_attack": "snmpgetattack",
+    "protocol": "udp",
+    "service": "private",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to private service with connection status SF. was instantaneous. transferred 105 bytes from source and 105 bytes from destination. was part of 3 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 806 seconds. transferred 75484 bytes from source and 0 bytes from destination. was part of 59 connections to the same host in the past 2 seconds. had high REJ error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 303 bytes from source and 2698 bytes from destination. was part of 4 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 181 bytes from source and 7051 bytes from destination. was part of 2 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "time",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to time service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 294 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 306 bytes from source and 2698 bytes from destination. was part of 4 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "apache2",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: back). Classification: dos (specifically: back).",
+    "full_input": "A tcp connection to http service with connection status RSTR. lasted 899 seconds. transferred 55744 bytes from source and 0 bytes from destination. was part of 32 connections to the same host in the past 2 seconds. had high REJ error rate (0.94)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "ftp_data",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to ftp_data service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 292 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "smurf",
+    "protocol": "icmp",
+    "service": "ecr_i",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: smurf). Classification: dos (specifically: probe). Classification: dos (specifically: neptune). Classification: dos (specifically: nmap). Classification:",
+    "full_input": "A icmp connection to ecr_i service with connection status SF. was instantaneous. transferred 520 bytes from source and 0 bytes from destination. was part of 352 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "dos",
+    "predicted_label": "dos",
+    "original_attack": "neptune",
+    "protocol": "tcp",
+    "service": "private",
+    "generated_text": "This network traffic shows signs of denial of service attack (specifically: neptune). Classification: dos (denial of service).\n\n### Classification:\nThis network traffic shows signs of denial of service attack (specifically: neptune",
+    "full_input": "A tcp connection to private service with connection status S0. was instantaneous. transferred 0 bytes from source and 0 bytes from destination. was part of 41 connections to the same host in the past 2 seconds. had high SYN error rate (1.00)."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 305 bytes from source and 486 bytes from destination. was part of 7 connections to the same host in the past 2 seconds."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "udp",
+    "service": "domain_u",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A udp connection to domain_u service with connection status SF. was instantaneous. transferred 44 bytes from source and 115 bytes from destination."
+  },
+  {
+    "true_label": "normal",
+    "predicted_label": "normal",
+    "original_attack": "normal",
+    "protocol": "tcp",
+    "service": "http",
+    "generated_text": "This network traffic represents normal network activity. Classification: normal.",
+    "full_input": "A tcp connection to http service with connection status SF. was instantaneous. transferred 199 bytes from source and 1025 bytes from destination. was part of 5 connections to the same host in the past 2 seconds."
+  }
+]

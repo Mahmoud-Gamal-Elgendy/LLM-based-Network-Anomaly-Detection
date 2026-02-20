@@ -120,14 +120,16 @@ class TrainingConfig:
     logging_dir: str = "./Models/logs"
     
     # Training hyperparameters
-    num_train_epochs: int = 3  # Number of complete passes through data
+    # 1 epoch is sufficient for LoRA fine-tuning — the model sees every sample once.
+    # More epochs risk overfitting and are unnecessary for instruction tuning.
+    num_train_epochs: int = 1  # 1 epoch ≈ 1,575 steps on T4 ≈ 2-3 hours
     per_device_train_batch_size: int = 4  # Batch size per GPU
-    per_device_eval_batch_size: int = 4
+    per_device_eval_batch_size: int = 8  # Larger eval batch (no gradients → less memory)
     gradient_accumulation_steps: int = 4  # Accumulate gradients (effective batch = 4*4=16)
     
     # Learning rate
     learning_rate: float = 2e-4  # LoRA typically uses higher LR than full fine-tuning
-    warmup_steps: int = 100  # Gradual warmup prevents instability
+    warmup_steps: int = 50  # Proportional to 1 epoch (~3% of steps)
     
     # Optimization
     optim: str = "paged_adamw_8bit"  # Memory-efficient AdamW
@@ -143,15 +145,15 @@ class TrainingConfig:
     bf16: bool = False  # Use bfloat16 (better for newer GPUs like A100)
     
     # Logging and evaluation
-    logging_steps: int = 10  # Log every N steps
-    eval_steps: int = 100  # Evaluate every N steps
-    save_steps: int = 200  # Save checkpoint every N steps
+    logging_steps: int = 25  # Log every 25 steps (less I/O overhead)
+    eval_steps: int = 500  # Evaluate every 500 steps (eval is EXPENSIVE: 22k samples)
+    save_steps: int = 250  # Save checkpoint every 250 steps (crash recovery)
     eval_strategy: str = "steps"  # Evaluate during training
     save_strategy: str = "steps"
     
-    # Checkpointing
-    save_total_limit: int = 3  # Keep only last 3 checkpoints
-    load_best_model_at_end: bool = True  # Load best checkpoint at end
+    # Checkpointing — saves every 250 steps so you can RESUME after a crash
+    save_total_limit: int = 2  # Keep only last 2 checkpoints (save disk space)
+    load_best_model_at_end: bool = False  # Disabled: requires eval at every save step
     metric_for_best_model: str = "eval_loss"  # Metric to determine best model
     
     # Memory optimization
@@ -729,8 +731,17 @@ def train_model(model, tokenizer, train_dataset, eval_dataset,
     print(f"  - Checkpoints will be saved to: {training_config.output_dir}")
     print(f"\n{'='*70}\n")
     
+    # ── Resume from checkpoint if one exists (crash recovery) ──────────
+    checkpoint_dir = Path(training_config.output_dir)
+    last_checkpoint = None
+    if checkpoint_dir.exists():
+        checkpoints = sorted(checkpoint_dir.glob("checkpoint-*"), key=os.path.getmtime)
+        if checkpoints:
+            last_checkpoint = str(checkpoints[-1])
+            print(f"\n  ✓ Resuming from checkpoint: {last_checkpoint}")
+    
     # Train the model
-    trainer.train()
+    trainer.train(resume_from_checkpoint=last_checkpoint)
     
     print(f"\n{'='*70}")
     print("TRAINING COMPLETE!")
@@ -739,21 +750,25 @@ def train_model(model, tokenizer, train_dataset, eval_dataset,
     return trainer
 
 
-def save_model(trainer, output_dir: str):
+def save_model(trainer, tokenizer, output_dir: str):
     """
     Save the fine-tuned model and tokenizer.
     
     Args:
         trainer: Trained model
+        tokenizer: Tokenizer to save
         output_dir (str): Directory to save model
     """
     print(f"\n{'='*70}")
     print("Saving Model...")
     print(f"{'='*70}")
     
+    # Create output directory
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    
     # Save the model
     trainer.model.save_pretrained(output_dir)
-    trainer.tokenizer.save_pretrained(output_dir)
+    tokenizer.save_pretrained(output_dir)
     
     print(f"✓ Model saved to: {output_dir}")
     print(f"✓ Tokenizer saved to: {output_dir}")
@@ -811,11 +826,17 @@ def main():
     print("PREPARING DATASETS")
     print(f"{'='*70}")
     
+    # ── max_length=256 ──────────────────────────────────────────────────
+    # Your samples average ~117 tokens. Using 512 means 77% of every sequence
+    # is useless padding that still costs GPU time. 256 fits >99% of samples
+    # and cuts compute roughly in half.
+    MAX_LENGTH = 256
+    
     # Load training dataset
     train_data_loader = NetworkAnomalyDataset(
         str(TRAIN_JSON),
         tokenizer,
-        max_length=512
+        max_length=MAX_LENGTH
     )
     train_dataset = train_data_loader.get_dataset()
     
@@ -823,9 +844,19 @@ def main():
     eval_data_loader = NetworkAnomalyDataset(
         str(TEST_JSON),
         tokenizer,
-        max_length=512
+        max_length=MAX_LENGTH
     )
-    eval_dataset = eval_data_loader.get_dataset()
+    eval_dataset_full = eval_data_loader.get_dataset()
+    
+    # ── Subsample eval set ──────────────────────────────────────────────
+    # Evaluating on all 22,544 samples takes ~20 min per eval run.
+    # Using 3,000 stratified samples gives a reliable loss estimate in ~3 min.
+    EVAL_SUBSET_SIZE = 3000
+    if len(eval_dataset_full) > EVAL_SUBSET_SIZE:
+        eval_dataset = eval_dataset_full.shuffle(seed=42).select(range(EVAL_SUBSET_SIZE))
+        print(f"  ✓ Eval subset: {EVAL_SUBSET_SIZE:,} / {len(eval_dataset_full):,} samples")
+    else:
+        eval_dataset = eval_dataset_full
     
     # ========================================================================
     # STEP 4: Train Model
@@ -841,7 +872,7 @@ def main():
     # ========================================================================
     # STEP 5: Save Final Model
     # ========================================================================
-    save_model(trainer, str(OUTPUT_DIR / "final"))
+    save_model(trainer, tokenizer, str(OUTPUT_DIR / "final"))
     
     # ========================================================================
     # COMPLETION
