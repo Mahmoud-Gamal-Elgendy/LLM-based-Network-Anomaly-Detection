@@ -195,19 +195,6 @@ pip install torch torchvision torchaudio
 pip install -r requirements.txt
 ```
 
-### Step 4: Verify Installation
-
-```bash
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA Available: {torch.cuda.is_available()}')"
-python -c "import transformers; print(f'Transformers: {transformers.__version__}')"
-```
-
-Expected output:
-```
-PyTorch: 2.x.x
-CUDA Available: True
-Transformers: 4.35.x
-```
 
 ---
 
@@ -312,10 +299,6 @@ tensorboard --logdir ../Models/logs
 - `Models/phi2-kdd-lora/final/` (best model, ~65MB)
 - Training logs and checkpoints
 
-**Expected training time:**
-- RTX 3080 (10GB): **2-3 hours**
-- RTX 4090 (24GB): **1-1.5 hours**
-- A100 (40GB): **45-60 minutes**
 
 ---
 
@@ -341,42 +324,12 @@ python 4_evaluate_model.py
 - `Results/confusion_matrix.png` - Heatmap
 - `Results/per_class_metrics.png` - Bar chart
 - `Results/evaluation_report.txt` - Summary
-
 ---
-
-## Hardware Requirements
-
-### Minimum Requirements (Training)
-
-- **GPU:** NVIDIA GPU with 8GB VRAM (RTX 3060 Ti, RTX 3070)
-- **RAM:** 16GB system memory
-- **Storage:** 50GB free space (for model cache and outputs)
-- **CUDA:** 11.8 or higher
-
-### Recommended Requirements
-
-- **GPU:** RTX 3080 (10GB), RTX 4080 (16GB), or RTX 4090 (24GB)
-- **RAM:** 32GB system memory
-- **Storage:** 100GB free space (SSD recommended)
-- **CUDA:** 11.8 or 12.1
-
-### For Inference Only
-
-- **GPU:** 6GB VRAM (can run evaluation on smaller GPUs)
-- **RAM:** 8GB system memory
-- **Storage:** 20GB free space
-
-### CPU-Only Mode
-
- **Not recommended for training** (would take days), but works for evaluation (very slow).
-
----
-
-## Expected Results
+## Results
 
 ### Performance Benchmarks
 
-| Metric | Expected Range | Notes |
+| Metric |  Range | Notes |
 |--------|---------------|-------|
 | **Overall Accuracy** | 85-95% | Competitive with state-of-the-art |
 | **Weighted F1-Score** | 0.85-0.92 | Accounts for class imbalance |
@@ -397,77 +350,6 @@ python 4_evaluate_model.py
 
 **Key Advantage:** Similar accuracy + natural language explanations
 
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### 1. CUDA Out of Memory
-
-**Error:** `RuntimeError: CUDA out of memory`
-
-**Solutions:**
-```python
-# In 3_train_model.py, reduce batch size:
-per_device_train_batch_size = 2  # Instead of 4
-
-# Or reduce max sequence length:
-max_length = 256  # Instead of 512
-```
-
-#### 2. bitsandbytes Installation Failed
-
-**Error:** `Could not find bitsandbytes`
-
-**Solution:** bitsandbytes requires CUDA. For Windows:
-```bash
-pip install bitsandbytes-windows
-```
-
-For Linux/Mac, ensure CUDA is properly installed.
-
-#### 3. Model Loading Slow
-
-**Issue:** Model takes 5-10 minutes to load
-
-**Explanation:** Normal on first run (downloads 5GB+ from HuggingFace). Subsequent runs use cache.
-
-#### 4. Evaluation Produces "unknown" Predictions
-
-**Cause:** Temperature too high or prompt format mismatch
-
-**Solution:** In `4_evaluate_model.py`:
-```python
-temperature = 0.1  # Lower for more deterministic outputs
-```
-
----
-
-## Future Work
-
-### Short-Term Enhancements
-
-- [ ] Add real-time streaming inference
-- [ ] Implement class balancing (SMOTE, oversampling)
-- [ ] Try different base models (Llama-2, Mistral)
-- [ ] Add ensemble methods
-
-### Medium-Term Goals
-
-- [ ] Deploy as REST API (FastAPI)
-- [ ] Create web dashboard for monitoring
-- [ ] Test on other IDS datasets (CICIDS2017, UNSW-NB15)
-- [ ] Implement continual learning
-
-### Long-Term Vision
-
-- [ ] Integration with SIEM platforms
-- [ ] Multi-modal fusion (network + system logs)
-- [ ] Federated learning for privacy
-- [ ] 6G testbed deployment
-
 ---
 
 ## Acknowledgments
@@ -482,37 +364,6 @@ temperature = 0.1  # Lower for more deterministic outputs
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-
-## The Context: Why 6G and LLMs?
-
-### 1. What is 6G?
-
-**6G** is the next generation of wireless communication (expected around 2030). Unlike 5G, 6G is designed to be **AI-Native** from the ground up. AI isn't just an add-on; it's the "brain" of the network, managing:
-- Terabit-per-second data speeds
-- Billions of IoT devices
-- Microsecond-level latency
-- Autonomous network operations
-
-### 2. Current Limitations
-
-Traditional intrusion detection methods:
-- **Signature-based:** Only catches known attacks, fails against zero-day exploits
-- **Statistical ML:** Fast but provides no reasoning (black box)
-- **Rule-based:** Requires manual expert knowledge, can't adapt
-
-### 3. The LLM Advantage
-
-Using LLMs for network security enables:
-- **Semantic Understanding:** Models learn attack patterns, not just feature correlations
-- **Explainability (XAI):** Every decision comes with human-readable reasoning
-- **Adaptability:** Can generalize to new attack variants
-- **Autonomous Operation:** Suitable for self-healing 6G networks
-
-**Example Explanation:**
-> "I flagged this as a DDoS attack because the source IP initiated 123 connections in 2 seconds with 100% SYN errors, which indicates a SYN flood pattern typical of neptune attacks."
 
 ---
 Author
