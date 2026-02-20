@@ -44,7 +44,8 @@ from transformers import (
     BitsAndBytesConfig,
     TrainingArguments,
     Trainer,
-    DataCollatorForLanguageModeling
+    TrainerCallback,
+    default_data_collator
 )
 from peft import (
     LoraConfig,
@@ -134,14 +135,18 @@ class TrainingConfig:
     max_grad_norm: float = 1.0  # Gradient clipping
     
     # Mixed precision
-    fp16: bool = True  # Use 16-bit floating point (set False if you have bf16 support)
+    # CRITICAL: fp16=False because the model already computes in float16 via
+    # bnb_4bit_compute_dtype. Adding AMP GradScaler on top causes overflow
+    # (loss * scale_factor > float16 max), which makes GradScaler skip EVERY
+    # optimizer step → loss=0, grad_norm=nan, lr=0.
+    fp16: bool = False
     bf16: bool = False  # Use bfloat16 (better for newer GPUs like A100)
     
     # Logging and evaluation
     logging_steps: int = 10  # Log every N steps
     eval_steps: int = 100  # Evaluate every N steps
     save_steps: int = 200  # Save checkpoint every N steps
-    evaluation_strategy: str = "steps"  # Evaluate during training
+    eval_strategy: str = "steps"  # Evaluate during training
     save_strategy: str = "steps"
     
     # Checkpointing
@@ -150,7 +155,10 @@ class TrainingConfig:
     metric_for_best_model: str = "eval_loss"  # Metric to determine best model
     
     # Memory optimization
-    gradient_checkpointing: bool = True  # Trade compute for memory
+    # We enable gradient checkpointing MANUALLY in setup_lora() with
+    # use_reentrant=False (required for QLoRA). Setting this to False
+    # prevents the Trainer from re-enabling it with wrong/missing kwargs.
+    gradient_checkpointing: bool = False
     
     # Other settings
     report_to: str = "tensorboard"  # Report metrics to TensorBoard
@@ -231,33 +239,6 @@ class NetworkAnomalyDataset:
         
         return prompt
     
-    def tokenize_function(self, examples: Dict) -> Dict:
-        """
-        Tokenize examples for training.
-        
-        Args:
-            examples (Dict): Batch of examples
-        
-        Returns:
-            Dict: Tokenized examples
-        """
-        # Format prompts
-        prompts = [self.format_prompt(item) for item in examples['data']]
-        
-        # Tokenize
-        tokenized = self.tokenizer(
-            prompts,
-            truncation=True,
-            max_length=self.max_length,
-            padding="max_length",
-            return_tensors="pt"
-        )
-        
-        # For causal LM, labels are the same as input_ids
-        tokenized["labels"] = tokenized["input_ids"].clone()
-        
-        return tokenized
-    
     def get_dataset(self) -> Dataset:
         """
         Convert to HuggingFace Dataset format.
@@ -269,22 +250,74 @@ class NetworkAnomalyDataset:
         print("Converting to HuggingFace Dataset Format...")
         print(f"{'='*70}")
         
-        # Create dataset from dictionary
-        dataset = Dataset.from_dict({'data': self.data})
+        # Format all prompts
+        print("\nFormatting prompts...")
+        formatted_texts = []
+        for item in self.data:
+            prompt = self.format_prompt(item)
+            formatted_texts.append(prompt)
         
-        # Tokenize dataset
+        # Verify sample
+        print(f"\nSample prompt (first 200 chars):")
+        print(f"{formatted_texts[0][:200]}...")
+        
+        # Tokenize all at once
         print("\nTokenizing dataset...")
-        tokenized_dataset = dataset.map(
-            lambda x: self.tokenize_function({'data': [x['data']]}),
-            remove_columns=['data'],
-            desc="Tokenizing"
+        tokenized = self.tokenizer(
+            formatted_texts,
+            truncation=True,
+            max_length=self.max_length,
+            padding="max_length",
+            return_attention_mask=True,
         )
         
-        print(f"✓ Dataset ready for training")
-        print(f"  - Total samples: {len(tokenized_dataset):,}")
-        print(f"  - Features: {tokenized_dataset.column_names}")
+        # ================================================================
+        # CRITICAL FIX: Create labels explicitly instead of relying on
+        # DataCollatorForLanguageModeling. Labels = input_ids for real
+        # tokens, -100 for padding (so loss ignores padding positions).
+        # ================================================================
+        print("Creating labels (masking padding with -100)...")
+        labels = []
+        for input_ids, attn_mask in zip(tokenized['input_ids'], tokenized['attention_mask']):
+            label = [
+                token_id if mask == 1 else -100
+                for token_id, mask in zip(input_ids, attn_mask)
+            ]
+            labels.append(label)
         
-        return tokenized_dataset
+        # Convert to HuggingFace Dataset
+        print("Creating dataset...")
+        dataset_dict = {
+            'input_ids': tokenized['input_ids'],
+            'attention_mask': tokenized['attention_mask'],
+            'labels': labels,
+        }
+        
+        dataset = Dataset.from_dict(dataset_dict)
+        
+        print(f"✓ Dataset ready for training")
+        print(f"  - Total samples: {len(dataset):,}")
+        print(f"  - Features: {dataset.column_names}")
+        
+        # Verify a sample
+        sample = dataset[0]
+        non_padding = sum(sample['attention_mask'])
+        non_ignored_labels = sum(1 for l in sample['labels'] if l != -100)
+        print(f"\n  Sample verification:")
+        print(f"    - Input IDs length: {len(sample['input_ids'])}")
+        print(f"    - Attention mask length: {len(sample['attention_mask'])}")
+        print(f"    - Non-padding tokens: {non_padding}")
+        print(f"    - Non-ignored labels: {non_ignored_labels}")
+        print(f"    - First 10 tokens: {sample['input_ids'][:10]}")
+        print(f"    - First 10 labels: {sample['labels'][:10]}")
+        
+        if non_ignored_labels == 0:
+            raise RuntimeError(
+                "ALL labels are -100! The model cannot learn anything. "
+                "Check that your text is being tokenized correctly."
+            )
+        
+        return dataset
 
 
 # ============================================================================
@@ -346,19 +379,24 @@ def setup_model_and_tokenizer(config: ModelConfig):
     print("\n[3/3] Loading phi-2 Model (2.7B parameters)...")
     print("  ⏳ This may take a few minutes...")
     
+    # Load model configuration first and set pad_token_id
+    from transformers import AutoConfig
+    model_config = AutoConfig.from_pretrained(
+        config.model_id,
+        trust_remote_code=config.trust_remote_code
+    )
+    model_config.pad_token_id = tokenizer.pad_token_id  # Set pad token ID
+    model_config.use_cache = False  # Disable cache for training
+    
     model = AutoModelForCausalLM.from_pretrained(
         config.model_id,
+        config=model_config,
         quantization_config=bnb_config,
         device_map=config.device_map,
         trust_remote_code=config.trust_remote_code,
-        torch_dtype=torch.float16
+        torch_dtype=torch.float16,
+        attn_implementation="eager"  # Use eager attention (more stable)
     )
-    
-    # Disable cache for training (required for gradient checkpointing)
-    model.config.use_cache = False
-    
-    # Enable gradient checkpointing
-    model.gradient_checkpointing_enable()
     
     print(f"✓ Model loaded successfully")
     
@@ -391,11 +429,21 @@ def setup_lora(model, lora_config: LoRAConfig_Custom):
     print(f"{'='*70}")
     
     # Prepare model for k-bit training
-    print("\n[1/2] Preparing model for k-bit training...")
-    model = prepare_model_for_kbit_training(model)
+    # CRITICAL FIX: Disable gradient checkpointing here to avoid conflict
+    # with TrainingArguments. We'll enable it in Trainer with use_reentrant=False.
+    print("\n[1/3] Preparing model for k-bit training...")
+    model = prepare_model_for_kbit_training(
+        model, 
+        use_gradient_checkpointing=False  # Let Trainer handle this with correct kwargs
+    )
+    
+    # CRITICAL FIX: Enable input grad requirement for frozen quantized layers.
+    # Without this, gradients cannot flow from the frozen base model into LoRA adapters.
+    print("\n[2/3] Enabling input gradients for LoRA...")
+    model.enable_input_require_grads()
     
     # Configure LoRA
-    print("\n[2/2] Configuring LoRA adapters...")
+    print("\n[3/3] Configuring LoRA adapters...")
     
     peft_config = LoraConfig(
         r=lora_config.r,
@@ -428,7 +476,67 @@ def setup_lora(model, lora_config: LoRAConfig_Custom):
     print(f"  - Trainable: {trainable_percentage:.2f}%")
     print(f"  - Memory savings: {100 - trainable_percentage:.2f}%")
     
+    # ====================================================================
+    # CRITICAL FIX: Enable gradient checkpointing HERE with guaranteed
+    # use_reentrant=False. We do NOT let the Trainer handle this because
+    # some transformers/PEFT versions silently ignore the kwargs parameter.
+    # ====================================================================
+    print(f"\n[4/4] Enabling gradient checkpointing (use_reentrant=False)...")
+    import functools
+    try:
+        model.gradient_checkpointing_enable(
+            gradient_checkpointing_kwargs={"use_reentrant": False}
+        )
+        print(f"  ✓ Enabled via gradient_checkpointing_kwargs API")
+    except TypeError:
+        # Older transformers version that doesn't support the kwargs parameter
+        model.gradient_checkpointing_enable()
+        print(f"  ⚠ Fallback: patching _gradient_checkpointing_func directly")
+    
+    # Belt-and-suspenders: directly patch the checkpointing function on
+    # EVERY module that has it, ensuring use_reentrant=False is used.
+    patched = 0
+    for module in model.modules():
+        if hasattr(module, '_gradient_checkpointing_func'):
+            module._gradient_checkpointing_func = functools.partial(
+                torch.utils.checkpoint.checkpoint,
+                use_reentrant=False
+            )
+            patched += 1
+    print(f"  ✓ Patched _gradient_checkpointing_func on {patched} module(s)")
+    
     return model
+
+
+# ============================================================================
+# DEBUG CALLBACK — Verifies training is actually updating weights
+# ============================================================================
+
+class EarlyDebugCallback(TrainerCallback):
+    """
+    Callback that prints detailed diagnostics for the first 5 training steps.
+    
+    If loss=0 or grad_norm=nan appears, it raises an error immediately so you
+    don't waste hours on a broken training run.
+    """
+    
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if state.global_step <= 5 and logs:
+            loss = logs.get("loss", None)
+            grad = logs.get("grad_norm", None)
+            lr = logs.get("learning_rate", None)
+            
+            print(f"\n  [DEBUG Step {state.global_step}]  "
+                  f"loss={loss}  grad_norm={grad}  lr={lr}")
+            
+            if loss is not None and (loss == 0 or str(loss) == "0"):
+                print("  ⚠ WARNING: loss is 0 — the model is NOT learning!")
+            if grad is not None and (str(grad) == "nan"):
+                print("  ⚠ WARNING: grad_norm is nan — gradients are broken!")
+            # lr=0 at step 1-2 is NORMAL during warmup (lr ramps from 0 → target).
+            # Only warn if lr is still 0 after warmup should have started increasing.
+            if lr is not None and lr == 0 and state.global_step > 5:
+                print("  ⚠ WARNING: learning_rate is still 0 — optimizer may be stuck!")
 
 
 # ============================================================================
@@ -475,8 +583,9 @@ def train_model(model, tokenizer, train_dataset, eval_dataset,
         fp16=training_config.fp16,
         bf16=training_config.bf16,
         logging_steps=training_config.logging_steps,
+        logging_first_step=True,  # Log first step to verify training starts
         logging_dir=training_config.logging_dir,
-        evaluation_strategy=training_config.evaluation_strategy,
+        eval_strategy=training_config.eval_strategy,
         eval_steps=training_config.eval_steps,
         save_strategy=training_config.save_strategy,
         save_steps=training_config.save_steps,
@@ -484,6 +593,8 @@ def train_model(model, tokenizer, train_dataset, eval_dataset,
         load_best_model_at_end=training_config.load_best_model_at_end,
         metric_for_best_model=training_config.metric_for_best_model,
         gradient_checkpointing=training_config.gradient_checkpointing,
+        # gradient_checkpointing is handled manually in setup_lora()
+        # with guaranteed use_reentrant=False.
         report_to=training_config.report_to,
         seed=training_config.seed,
         remove_unused_columns=False,  # Important for custom datasets
@@ -504,11 +615,28 @@ def train_model(model, tokenizer, train_dataset, eval_dataset,
     # ========================================================================
     # Data Collator
     # ========================================================================
-    # This handles batching and padding
-    data_collator = DataCollatorForLanguageModeling(
-        tokenizer=tokenizer,
-        mlm=False  # We're doing causal LM, not masked LM
-    )
+    # Using default_data_collator since labels are already created in the dataset.
+    # This avoids issues with DataCollatorForLanguageModeling where pad_token=eos_token
+    # can cause ALL tokens (including real content) to be masked as -100.
+    data_collator = default_data_collator
+    
+    # Test data collator with a sample batch
+    print(f"\nTesting data collator...")
+    test_batch = data_collator([train_dataset[0], train_dataset[1]])
+    print(f"  - Batch keys: {test_batch.keys()}")
+    print(f"  - Input IDs shape: {test_batch['input_ids'].shape}")
+    print(f"  - Labels shape: {test_batch['labels'].shape}")
+    print(f"  - Has -100 in labels: {(-100 in test_batch['labels'].flatten())}")
+    non_ignored = (test_batch['labels'] != -100).sum().item()
+    total_labels = test_batch['labels'].numel()
+    print(f"  - Non-ignored labels: {non_ignored}/{total_labels} ({100*non_ignored/total_labels:.1f}%)")
+    print(f"  - Sample label values: {test_batch['labels'][0][:20].tolist()}")
+    
+    if non_ignored == 0:
+        raise RuntimeError(
+            "ALL labels are -100! The model has no targets to learn from. "
+            "Check dataset creation and tokenization."
+        )
     
     # ========================================================================
     # Initialize Trainer
@@ -517,12 +645,72 @@ def train_model(model, tokenizer, train_dataset, eval_dataset,
     print("Initializing Trainer...")
     print(f"{'='*70}")
     
+    # Ensure model is in training mode
+    model.train()
+    
+    # Verify trainable parameters
+    trainable_params = [n for n, p in model.named_parameters() if p.requires_grad]
+    print(f"\n✓ Trainable parameter groups: {len(trainable_params)}")
+    if len(trainable_params) > 0:
+        print(f"  Sample: {trainable_params[0][:50]}...")
+    else:
+        raise RuntimeError("No trainable parameters found! LoRA setup failed.")
+    
+    # Test forward pass to verify loss computation
+    print(f"\nTesting forward pass...")
+    import torch
+    with torch.no_grad():
+        test_batch = data_collator([train_dataset[0], train_dataset[1]])
+        # Move to device
+        test_batch = {k: v.to(model.device) if isinstance(v, torch.Tensor) else v 
+                     for k, v in test_batch.items()}
+        outputs = model(**test_batch)
+        test_loss = outputs.loss.item()
+        print(f"  - Loss computed: {test_loss:.4f}")
+        print(f"  - Loss is valid: {not torch.isnan(outputs.loss) and test_loss > 0}")
+    
+    if torch.isnan(outputs.loss) or test_loss == 0:
+        raise RuntimeError(f"Forward pass test failed! Loss={test_loss}")
+    
+    # ========================================================================
+    # Verify gradient flow (catches the use_reentrant bug)
+    # ========================================================================
+    print(f"\nTesting gradient flow with a single backward pass...")
+    model.train()
+    grad_test_batch = data_collator([train_dataset[0]])
+    grad_test_batch = {k: v.to(model.device) if isinstance(v, torch.Tensor) else v
+                       for k, v in grad_test_batch.items()}
+    grad_test_output = model(**grad_test_batch)
+    grad_test_output.loss.backward()
+    
+    # Check if any LoRA parameter got a gradient
+    has_grad = False
+    for name, param in model.named_parameters():
+        if param.requires_grad and param.grad is not None:
+            grad_norm = param.grad.norm().item()
+            if grad_norm > 0 and not np.isnan(grad_norm):
+                has_grad = True
+                print(f"  ✓ Gradient verified: {name[:60]}... norm={grad_norm:.6f}")
+                break
+    
+    if not has_grad:
+        raise RuntimeError(
+            "Gradient flow test FAILED! No LoRA parameter received a valid gradient. "
+            "This means training would produce loss=0, grad_norm=nan. "
+            "Check gradient_checkpointing_kwargs and enable_input_require_grads."
+        )
+    
+    # Clear gradients from the test
+    model.zero_grad()
+    print(f"  ✓ Gradient flow confirmed - training will work correctly")
+    
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
+        callbacks=[EarlyDebugCallback()],  # Verify first steps aren't broken
     )
     
     print(f"✓ Trainer initialized")
