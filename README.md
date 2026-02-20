@@ -397,36 +397,6 @@ python 4_evaluate_model.py
 
 **Key Advantage:** Similar accuracy + natural language explanations
 
----
-
-## Research Contributions
-
-### Novel Aspects
-
-1. **First application of phi-2 to network intrusion detection** (to our knowledge)
-2. **Textification strategy** for network traffic → natural language
-3. **QLoRA fine-tuning** demonstrating parameter efficiency (0.6% trainable)
-4. **Explainable predictions** suitable for 6G Native AI requirements
-5. **Reproducible pipeline** with modular architecture
-
-### Suitable for Publication
-
-This project is **research-grade** and suitable for:
-- Conference papers (IEEE INFOCOM, ACM CCS, NDSS)
-- Journal articles (IEEE Transactions on Network and Service Management)
-- Workshop presentations (ML for Cybersecurity)
-
-### Citation
-
-If you use this work, please cite:
-```bibtex
-@misc{llm-network-anomaly-2026,
-  title={LLM-based Network Anomaly Detection for 6G-AIOps},
-  author={Your Name},
-  year={2026},
-  howpublished={\url{https://github.com/yourusername/LLM-Network-Anomaly-Detection}}
-}
-```
 
 ---
 
@@ -515,14 +485,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## Contact
-
-For questions, issues, or collaboration:
-- **Issues:** Use GitHub Issues
-- **Email:** your.email@example.com
-- **Research Inquiries:** your.academic@email.edu
-
----
 
 ## The Context: Why 6G and LLMs?
 
