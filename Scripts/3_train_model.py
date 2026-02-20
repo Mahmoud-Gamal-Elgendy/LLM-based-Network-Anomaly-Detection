@@ -1,0 +1,693 @@
+"""
+================================================================================
+MODULE 3: MODEL FINE-TUNING
+================================================================================
+
+Purpose:
+    This module fine-tunes Microsoft's phi-2 (2.7B parameters) on textified 
+    network traffic data for anomaly detection.
+
+What this script does:
+    1. Loads phi-2 model with 4-bit quantization (saves GPU memory)
+    2. Applies LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning
+    3. Prepares custom dataset from JSON files
+    4. Configures training with HuggingFace Trainer API
+    5. Fine-tunes the model with proper hyperparameters
+    6. Saves model checkpoints and final adapter weights
+
+Why we need this:
+    - Pre-trained phi-2 knows general language, not network security
+    - Fine-tuning adapts it to understand network traffic patterns
+    - LoRA enables training on consumer GPUs (only ~1% of parameters trained)
+    - This creates a domain-specific LLM for 6G network security
+
+Techniques Used:
+    - QLoRA: Quantized LoRA (4-bit quantization + LoRA adapters)
+    - Instruction Tuning: Teaching the model to follow classification tasks
+    - Gradient Checkpointing: Reduces memory usage during training
+    - Mixed Precision Training: Faster training with fp16/bf16
+
+================================================================================
+"""
+
+import torch
+import json
+import os
+from pathlib import Path
+from typing import Dict, List, Optional
+from dataclasses import dataclass, field
+
+# HuggingFace libraries
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForLanguageModeling
+)
+from peft import (
+    LoraConfig,
+    get_peft_model,
+    prepare_model_for_kbit_training,
+    TaskType
+)
+from datasets import Dataset
+import numpy as np
+
+# Progress tracking
+from tqdm import tqdm
+
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
+
+@dataclass
+class ModelConfig:
+    """Configuration for model loading and quantization."""
+    
+    # Model selection
+    model_id: str = "microsoft/phi-2"
+    
+    # Quantization settings (4-bit for memory efficiency)
+    load_in_4bit: bool = True
+    bnb_4bit_quant_type: str = "nf4"  # NormalFloat4 quantization
+    bnb_4bit_compute_dtype: str = "float16"  # Compute dtype
+    bnb_4bit_use_double_quant: bool = True  # Nested quantization
+    
+    # Device settings
+    device_map: str = "auto"  # Automatically distribute layers across GPUs
+    trust_remote_code: bool = True  # Required for phi-2
+
+
+@dataclass
+class LoRAConfig_Custom:
+    """Configuration for LoRA (Low-Rank Adaptation)."""
+    
+    # LoRA hyperparameters
+    r: int = 16  # Rank of the update matrices (higher = more capacity)
+    lora_alpha: int = 32  # Scaling factor (typically 2*r)
+    lora_dropout: float = 0.05  # Dropout for regularization
+    
+    # Target modules (which layers to apply LoRA to)
+    # For phi-2, we target query, key, value, and output projections
+    target_modules: List[str] = field(default_factory=lambda: [
+        "q_proj",    # Query projection
+        "k_proj",    # Key projection  
+        "v_proj",    # Value projection
+        "dense",     # Output dense layer
+        "fc1",       # Feed-forward layer 1
+        "fc2"        # Feed-forward layer 2
+    ])
+    
+    # Task type
+    task_type: str = "CAUSAL_LM"  # Causal language modeling
+    
+    # Inference mode
+    inference_mode: bool = False  # Set to False for training
+    
+    # Bias handling
+    bias: str = "none"  # Don't train bias parameters
+
+
+@dataclass
+class TrainingConfig:
+    """Configuration for training hyperparameters."""
+    
+    # Output directories
+    output_dir: str = "./Models/phi2-kdd-lora"
+    logging_dir: str = "./Models/logs"
+    
+    # Training hyperparameters
+    num_train_epochs: int = 3  # Number of complete passes through data
+    per_device_train_batch_size: int = 4  # Batch size per GPU
+    per_device_eval_batch_size: int = 4
+    gradient_accumulation_steps: int = 4  # Accumulate gradients (effective batch = 4*4=16)
+    
+    # Learning rate
+    learning_rate: float = 2e-4  # LoRA typically uses higher LR than full fine-tuning
+    warmup_steps: int = 100  # Gradual warmup prevents instability
+    
+    # Optimization
+    optim: str = "paged_adamw_8bit"  # Memory-efficient AdamW
+    weight_decay: float = 0.01  # L2 regularization
+    max_grad_norm: float = 1.0  # Gradient clipping
+    
+    # Mixed precision
+    fp16: bool = True  # Use 16-bit floating point (set False if you have bf16 support)
+    bf16: bool = False  # Use bfloat16 (better for newer GPUs like A100)
+    
+    # Logging and evaluation
+    logging_steps: int = 10  # Log every N steps
+    eval_steps: int = 100  # Evaluate every N steps
+    save_steps: int = 200  # Save checkpoint every N steps
+    evaluation_strategy: str = "steps"  # Evaluate during training
+    save_strategy: str = "steps"
+    
+    # Checkpointing
+    save_total_limit: int = 3  # Keep only last 3 checkpoints
+    load_best_model_at_end: bool = True  # Load best checkpoint at end
+    metric_for_best_model: str = "eval_loss"  # Metric to determine best model
+    
+    # Memory optimization
+    gradient_checkpointing: bool = True  # Trade compute for memory
+    
+    # Other settings
+    report_to: str = "tensorboard"  # Report metrics to TensorBoard
+    seed: int = 42  # For reproducibility
+
+
+# ============================================================================
+# DATASET PREPARATION
+# ============================================================================
+
+class NetworkAnomalyDataset:
+    """
+    Custom dataset class for network anomaly detection.
+    
+    This class loads the textified JSON data and prepares it for training.
+    """
+    
+    def __init__(self, json_path: str, tokenizer, max_length: int = 512):
+        """
+        Initialize dataset.
+        
+        Args:
+            json_path (str): Path to textified JSON file
+            tokenizer: HuggingFace tokenizer
+            max_length (int): Maximum sequence length
+        """
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        
+        print(f"\n{'='*70}")
+        print(f"Loading Dataset: {Path(json_path).name}")
+        print(f"{'='*70}")
+        
+        # Load JSON data
+        with open(json_path, 'r', encoding='utf-8') as f:
+            self.data = json.load(f)
+        
+        print(f"✓ Loaded {len(self.data):,} records")
+        
+        # Get label distribution
+        self._print_label_distribution()
+    
+    def _print_label_distribution(self):
+        """Print distribution of attack categories."""
+        distribution = {}
+        for item in self.data:
+            category = item['attack_category']
+            distribution[category] = distribution.get(category, 0) + 1
+        
+        print(f"\nLabel Distribution:")
+        for label, count in sorted(distribution.items()):
+            percentage = (count / len(self.data)) * 100
+            print(f"  - {label:10s}: {count:6,} ({percentage:5.2f}%)")
+    
+    def format_prompt(self, item: Dict) -> str:
+        """
+        Format a single item into a training prompt.
+        
+        For instruction-tuned models, we combine instruction, input, and output.
+        
+        Args:
+            item (Dict): Single data item
+        
+        Returns:
+            str: Formatted prompt
+        """
+        # Format: Instruction + Input + Output
+        # This teaches the model the complete task structure
+        
+        prompt = f"""### Instruction:
+{item['instruction']}
+
+### Input:
+{item['input']}
+
+### Output:
+{item['output']}"""
+        
+        return prompt
+    
+    def tokenize_function(self, examples: Dict) -> Dict:
+        """
+        Tokenize examples for training.
+        
+        Args:
+            examples (Dict): Batch of examples
+        
+        Returns:
+            Dict: Tokenized examples
+        """
+        # Format prompts
+        prompts = [self.format_prompt(item) for item in examples['data']]
+        
+        # Tokenize
+        tokenized = self.tokenizer(
+            prompts,
+            truncation=True,
+            max_length=self.max_length,
+            padding="max_length",
+            return_tensors="pt"
+        )
+        
+        # For causal LM, labels are the same as input_ids
+        tokenized["labels"] = tokenized["input_ids"].clone()
+        
+        return tokenized
+    
+    def get_dataset(self) -> Dataset:
+        """
+        Convert to HuggingFace Dataset format.
+        
+        Returns:
+            Dataset: HuggingFace Dataset object
+        """
+        print(f"\n{'='*70}")
+        print("Converting to HuggingFace Dataset Format...")
+        print(f"{'='*70}")
+        
+        # Create dataset from dictionary
+        dataset = Dataset.from_dict({'data': self.data})
+        
+        # Tokenize dataset
+        print("\nTokenizing dataset...")
+        tokenized_dataset = dataset.map(
+            lambda x: self.tokenize_function({'data': [x['data']]}),
+            remove_columns=['data'],
+            desc="Tokenizing"
+        )
+        
+        print(f"✓ Dataset ready for training")
+        print(f"  - Total samples: {len(tokenized_dataset):,}")
+        print(f"  - Features: {tokenized_dataset.column_names}")
+        
+        return tokenized_dataset
+
+
+# ============================================================================
+# MODEL INITIALIZATION
+# ============================================================================
+
+def setup_model_and_tokenizer(config: ModelConfig):
+    """
+    Load and configure phi-2 model with quantization.
+    
+    Args:
+        config (ModelConfig): Model configuration
+    
+    Returns:
+        tuple: (model, tokenizer)
+    """
+    print(f"\n{'='*70}")
+    print("LOADING PHI-2 MODEL")
+    print(f"{'='*70}")
+    
+    # ========================================================================
+    # STEP 1: Configure 4-bit Quantization
+    # ========================================================================
+    print("\n[1/3] Configuring 4-bit Quantization...")
+    
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=config.load_in_4bit,
+        bnb_4bit_quant_type=config.bnb_4bit_quant_type,
+        bnb_4bit_compute_dtype=getattr(torch, config.bnb_4bit_compute_dtype),
+        bnb_4bit_use_double_quant=config.bnb_4bit_use_double_quant
+    )
+    
+    print(f"✓ Quantization configured:")
+    print(f"  - Type: {config.bnb_4bit_quant_type}")
+    print(f"  - Compute dtype: {config.bnb_4bit_compute_dtype}")
+    print(f"  - Double quantization: {config.bnb_4bit_use_double_quant}")
+    
+    # ========================================================================
+    # STEP 2: Load Tokenizer
+    # ========================================================================
+    print("\n[2/3] Loading Tokenizer...")
+    
+    tokenizer = AutoTokenizer.from_pretrained(
+        config.model_id,
+        trust_remote_code=config.trust_remote_code
+    )
+    
+    # Configure tokenizer
+    tokenizer.pad_token = tokenizer.eos_token  # Use EOS token for padding
+    tokenizer.padding_side = "right"  # Pad on the right side
+    
+    print(f"✓ Tokenizer loaded")
+    print(f"  - Vocabulary size: {len(tokenizer):,}")
+    print(f"  - Pad token: {tokenizer.pad_token}")
+    
+    # ========================================================================
+    # STEP 3: Load Model
+    # ========================================================================
+    print("\n[3/3] Loading phi-2 Model (2.7B parameters)...")
+    print("  ⏳ This may take a few minutes...")
+    
+    model = AutoModelForCausalLM.from_pretrained(
+        config.model_id,
+        quantization_config=bnb_config,
+        device_map=config.device_map,
+        trust_remote_code=config.trust_remote_code,
+        torch_dtype=torch.float16
+    )
+    
+    # Disable cache for training (required for gradient checkpointing)
+    model.config.use_cache = False
+    
+    # Enable gradient checkpointing
+    model.gradient_checkpointing_enable()
+    
+    print(f"✓ Model loaded successfully")
+    
+    # Print model size
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    print(f"\nModel Statistics:")
+    print(f"  - Total parameters: {total_params:,}")
+    print(f"  - Trainable parameters: {trainable_params:,}")
+    print(f"  - Memory footprint: ~{total_params * 4 / 1e9:.2f} GB (before quantization)")
+    print(f"  - After 4-bit quantization: ~{total_params * 0.5 / 1e9:.2f} GB")
+    
+    return model, tokenizer
+
+
+def setup_lora(model, lora_config: LoRAConfig_Custom):
+    """
+    Apply LoRA adapters to the model.
+    
+    Args:
+        model: Base model
+        lora_config (LoRAConfig_Custom): LoRA configuration
+    
+    Returns:
+        model: Model with LoRA adapters
+    """
+    print(f"\n{'='*70}")
+    print("APPLYING LoRA (LOW-RANK ADAPTATION)")
+    print(f"{'='*70}")
+    
+    # Prepare model for k-bit training
+    print("\n[1/2] Preparing model for k-bit training...")
+    model = prepare_model_for_kbit_training(model)
+    
+    # Configure LoRA
+    print("\n[2/2] Configuring LoRA adapters...")
+    
+    peft_config = LoraConfig(
+        r=lora_config.r,
+        lora_alpha=lora_config.lora_alpha,
+        lora_dropout=lora_config.lora_dropout,
+        target_modules=lora_config.target_modules,
+        task_type=TaskType.CAUSAL_LM,
+        inference_mode=lora_config.inference_mode,
+        bias=lora_config.bias
+    )
+    
+    print(f"✓ LoRA configuration:")
+    print(f"  - Rank (r): {lora_config.r}")
+    print(f"  - Alpha: {lora_config.lora_alpha}")
+    print(f"  - Dropout: {lora_config.lora_dropout}")
+    print(f"  - Target modules: {', '.join(lora_config.target_modules)}")
+    
+    # Apply LoRA
+    model = get_peft_model(model, peft_config)
+    
+    # Print trainable parameters
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_percentage = 100 * trainable_params / total_params
+    
+    print(f"\n✓ LoRA adapters applied successfully")
+    print(f"\nParameter Efficiency:")
+    print(f"  - Total parameters: {total_params:,}")
+    print(f"  - Trainable parameters: {trainable_params:,}")
+    print(f"  - Trainable: {trainable_percentage:.2f}%")
+    print(f"  - Memory savings: {100 - trainable_percentage:.2f}%")
+    
+    return model
+
+
+# ============================================================================
+# TRAINING PIPELINE
+# ============================================================================
+
+def train_model(model, tokenizer, train_dataset, eval_dataset, 
+                training_config: TrainingConfig):
+    """
+    Fine-tune the model using HuggingFace Trainer API.
+    
+    Args:
+        model: Model with LoRA adapters
+        tokenizer: Tokenizer
+        train_dataset: Training dataset
+        eval_dataset: Evaluation dataset
+        training_config (TrainingConfig): Training configuration
+    
+    Returns:
+        Trainer: Trained model
+    """
+    print(f"\n{'='*70}")
+    print("FINE-TUNING PHI-2 ON NETWORK ANOMALY DETECTION")
+    print(f"{'='*70}")
+    
+    # Create output directories
+    Path(training_config.output_dir).mkdir(parents=True, exist_ok=True)
+    Path(training_config.logging_dir).mkdir(parents=True, exist_ok=True)
+    
+    # ========================================================================
+    # Training Arguments
+    # ========================================================================
+    training_args = TrainingArguments(
+        output_dir=training_config.output_dir,
+        num_train_epochs=training_config.num_train_epochs,
+        per_device_train_batch_size=training_config.per_device_train_batch_size,
+        per_device_eval_batch_size=training_config.per_device_eval_batch_size,
+        gradient_accumulation_steps=training_config.gradient_accumulation_steps,
+        learning_rate=training_config.learning_rate,
+        warmup_steps=training_config.warmup_steps,
+        optim=training_config.optim,
+        weight_decay=training_config.weight_decay,
+        max_grad_norm=training_config.max_grad_norm,
+        fp16=training_config.fp16,
+        bf16=training_config.bf16,
+        logging_steps=training_config.logging_steps,
+        logging_dir=training_config.logging_dir,
+        evaluation_strategy=training_config.evaluation_strategy,
+        eval_steps=training_config.eval_steps,
+        save_strategy=training_config.save_strategy,
+        save_steps=training_config.save_steps,
+        save_total_limit=training_config.save_total_limit,
+        load_best_model_at_end=training_config.load_best_model_at_end,
+        metric_for_best_model=training_config.metric_for_best_model,
+        gradient_checkpointing=training_config.gradient_checkpointing,
+        report_to=training_config.report_to,
+        seed=training_config.seed,
+        remove_unused_columns=False,  # Important for custom datasets
+    )
+    
+    print(f"\n{'='*70}")
+    print("Training Configuration:")
+    print(f"{'='*70}")
+    print(f"  Epochs: {training_config.num_train_epochs}")
+    print(f"  Batch size per device: {training_config.per_device_train_batch_size}")
+    print(f"  Gradient accumulation steps: {training_config.gradient_accumulation_steps}")
+    print(f"  Effective batch size: {training_config.per_device_train_batch_size * training_config.gradient_accumulation_steps}")
+    print(f"  Learning rate: {training_config.learning_rate}")
+    print(f"  Warmup steps: {training_config.warmup_steps}")
+    print(f"  FP16: {training_config.fp16}")
+    print(f"  Optimizer: {training_config.optim}")
+    
+    # ========================================================================
+    # Data Collator
+    # ========================================================================
+    # This handles batching and padding
+    data_collator = DataCollatorForLanguageModeling(
+        tokenizer=tokenizer,
+        mlm=False  # We're doing causal LM, not masked LM
+    )
+    
+    # ========================================================================
+    # Initialize Trainer
+    # ========================================================================
+    print(f"\n{'='*70}")
+    print("Initializing Trainer...")
+    print(f"{'='*70}")
+    
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=data_collator,
+    )
+    
+    print(f"✓ Trainer initialized")
+    print(f"  - Training samples: {len(train_dataset):,}")
+    print(f"  - Evaluation samples: {len(eval_dataset):,}")
+    print(f"  - Total training steps: {len(train_dataset) // (training_config.per_device_train_batch_size * training_config.gradient_accumulation_steps) * training_config.num_train_epochs:,}")
+    
+    # ========================================================================
+    # Start Training
+    # ========================================================================
+    print(f"\n{'='*70}")
+    print("STARTING TRAINING")
+    print(f"{'='*70}")
+    print("\nMonitor training progress:")
+    print(f"  - TensorBoard: tensorboard --logdir {training_config.logging_dir}")
+    print(f"  - Checkpoints will be saved to: {training_config.output_dir}")
+    print(f"\n{'='*70}\n")
+    
+    # Train the model
+    trainer.train()
+    
+    print(f"\n{'='*70}")
+    print("TRAINING COMPLETE!")
+    print(f"{'='*70}")
+    
+    return trainer
+
+
+def save_model(trainer, output_dir: str):
+    """
+    Save the fine-tuned model and tokenizer.
+    
+    Args:
+        trainer: Trained model
+        output_dir (str): Directory to save model
+    """
+    print(f"\n{'='*70}")
+    print("Saving Model...")
+    print(f"{'='*70}")
+    
+    # Save the model
+    trainer.model.save_pretrained(output_dir)
+    trainer.tokenizer.save_pretrained(output_dir)
+    
+    print(f"✓ Model saved to: {output_dir}")
+    print(f"✓ Tokenizer saved to: {output_dir}")
+    
+    # Print saved files
+    saved_files = list(Path(output_dir).glob("*"))
+    print(f"\nSaved files:")
+    for file in saved_files:
+        size = file.stat().st_size / (1024 * 1024)  # MB
+        print(f"  - {file.name} ({size:.2f} MB)")
+
+
+# ============================================================================
+# MAIN PIPELINE
+# ============================================================================
+
+def main():
+    """
+    Main training pipeline.
+    """
+    print("\n" + "="*70)
+    print(" "*15 + "PHI-2 FINE-TUNING PIPELINE")
+    print(" "*10 + "Network Anomaly Detection (6G-AIOps)")
+    print("="*70)
+    
+    # ========================================================================
+    # CONFIGURATION
+    # ========================================================================
+    PROJECT_ROOT = Path(__file__).parent.parent
+    
+    # Paths
+    TRAIN_JSON = PROJECT_ROOT / "Data" / "train_textified_detailed_instruction.json"
+    TEST_JSON = PROJECT_ROOT / "Data" / "test_textified_detailed_instruction.json"
+    OUTPUT_DIR = PROJECT_ROOT / "Models" / "phi2-kdd-lora"
+    
+    # Configurations
+    model_config = ModelConfig()
+    lora_config = LoRAConfig_Custom()
+    training_config = TrainingConfig()
+    
+    # ========================================================================
+    # STEP 1: Load Model and Tokenizer
+    # ========================================================================
+    model, tokenizer = setup_model_and_tokenizer(model_config)
+    
+    # ========================================================================
+    # STEP 2: Apply LoRA
+    # ========================================================================
+    model = setup_lora(model, lora_config)
+    
+    # ========================================================================
+    # STEP 3: Prepare Datasets
+    # ========================================================================
+    print(f"\n{'='*70}")
+    print("PREPARING DATASETS")
+    print(f"{'='*70}")
+    
+    # Load training dataset
+    train_data_loader = NetworkAnomalyDataset(
+        str(TRAIN_JSON),
+        tokenizer,
+        max_length=512
+    )
+    train_dataset = train_data_loader.get_dataset()
+    
+    # Load evaluation dataset
+    eval_data_loader = NetworkAnomalyDataset(
+        str(TEST_JSON),
+        tokenizer,
+        max_length=512
+    )
+    eval_dataset = eval_data_loader.get_dataset()
+    
+    # ========================================================================
+    # STEP 4: Train Model
+    # ========================================================================
+    trainer = train_model(
+        model,
+        tokenizer,
+        train_dataset,
+        eval_dataset,
+        training_config
+    )
+    
+    # ========================================================================
+    # STEP 5: Save Final Model
+    # ========================================================================
+    save_model(trainer, str(OUTPUT_DIR / "final"))
+    
+    # ========================================================================
+    # COMPLETION
+    # ========================================================================
+    print(f"\n{'='*70}")
+    print(" "*20 + "ALL DONE!")
+    print(f"{'='*70}")
+    print(f"\nFine-tuned model ready for inference!")
+    print(f"Model location: {OUTPUT_DIR / 'final'}")
+    print(f"\nNext steps:")
+    print(f"  1. Review training logs in: {training_config.logging_dir}")
+    print(f"  2. Proceed to Module 4: Evaluation")
+    print(f"  3. Test the model on new network traffic samples")
+    print(f"\n{'='*70}\n")
+
+
+# ============================================================================
+# SCRIPT ENTRY POINT
+# ============================================================================
+
+if __name__ == "__main__":
+    """
+    Run the fine-tuning pipeline.
+    
+    Usage:
+        python 3_train_model.py
+    
+    Requirements:
+        - GPU with at least 8GB VRAM (for 4-bit quantization)
+        - CUDA installed
+        - All dependencies from requirements.txt
+    
+    Expected training time:
+        - GPU (RTX 3080): ~2-3 hours for 3 epochs
+        - GPU (A100): ~1 hour for 3 epochs
+    """
+    main()

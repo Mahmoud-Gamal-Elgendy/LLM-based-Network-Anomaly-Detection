@@ -27,8 +27,6 @@ How it works:
        Source sent 215 bytes, destination sent 45034 bytes. 
        This traffic is classified as: normal."
 
-Author: Senior AI Engineer
-Project: LLM-based Network Anomaly Detection (6G-AIOps)
 ================================================================================
 """
 
